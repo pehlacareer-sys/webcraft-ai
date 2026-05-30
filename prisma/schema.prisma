@@ -1,8 +1,4 @@
-// This is your Prisma schema file,
-// learn more about it in the docs: https://pris.ly/d/prisma-schema
-
-// Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?
-// Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
+// AI Website Builder - Prisma Schema
 
 generator client {
   provider = "prisma-client-js"
@@ -13,20 +9,121 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
+// User management
 model User {
-  id        String   @id @default(cuid())
-  email     String   @unique
-  name      String?
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
+  id            String     @id @default(cuid())
+  email         String     @unique
+  name          String?
+  image         String?
+  role          String     @default("user") // "user" or "admin"
+  vercelToken   String?    // User's Vercel token for deployments
+  createdAt     DateTime   @default(now())
+  updatedAt     DateTime   @updatedAt
+  
+  projects      Project[]
+  sessions      Session[]
+  
+  @@map("users")
 }
 
-model Post {
+// API Keys Pool - Admin managed
+model APIKey {
+  id           String   @id @default(cuid())
+  provider     String   // "zai", "openrouter", "groq"
+  key          String   // Encrypted API key
+  name         String   // Friendly name like "Z.AI Account 1"
+  isActive     Boolean  @default(true)
+  dailyLimit   Int      @default(100)
+  dailyUsed    Int      @default(0)
+  lastUsed     DateTime?
+  lastReset    DateTime @default(now())
+  requestCount Int      @default(0)
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+  
+  sessions     Session[]
+  
+  @@map("api_keys")
+}
+
+// User projects
+model Project {
+  id                  String   @id @default(cuid())
+  userId              String
+  name                String
+  description         String?
+  code                String?  // Generated code
+  figmaJson           String?  // Figma design JSON
+  vercelDeploymentId  String?
+  vercelUrl           String?
+  status              String   @default("draft") // "draft", "generating", "deployed", "error"
+  template            String?  // Template ID if used
+  createdAt           DateTime @default(now())
+  updatedAt           DateTime @updatedAt
+  
+  user                User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  sessions            Session[]
+  
+  @@map("projects")
+}
+
+// Session management for API locking
+model Session {
+  id            String   @id @default(cuid())
+  userId        String
+  projectId     String?
+  apiKeyId      String?
+  messages      String   @default("[]") // JSON array of messages
+  codeState     String?  // Current code state
+  lastActivity  DateTime @default(now())
+  status        String   @default("active") // "active", "expired", "archived"
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+  
+  user          User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  project       Project? @relation(fields: [projectId], references: [id], onDelete: SetNull)
+  apiKey        APIKey?  @relation(fields: [apiKeyId], references: [id], onDelete: SetNull)
+  
+  @@map("sessions")
+}
+
+// Templates for quick start
+model Template {
+  id          String   @id @default(cuid())
+  name        String
+  description String?
+  category    String   // "landing", "portfolio", "saas", "blog", "ecommerce"
+  code        String   // Template code
+  preview     String?  // Preview image URL
+  isPublic    Boolean  @default(true)
+  isPremium   Boolean  @default(false)
+  usageCount  Int      @default(0)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  
+  @@map("templates")
+}
+
+// Audit logs for admin
+model AuditLog {
   id        String   @id @default(cuid())
-  title     String
-  content   String?
-  published Boolean  @default(false)
-  authorId  String
+  action    String   // "create", "update", "delete", "login", "generate", "deploy"
+  entity    String   // "user", "project", "api_key", "session"
+  entityId  String?
+  userId    String?
+  details   String?  // JSON details
+  ip        String?
   createdAt DateTime @default(now())
+  
+  @@map("audit_logs")
+}
+
+// System settings
+model Setting {
+  id        String   @id @default(cuid())
+  key       String   @unique
+  value     String
   updatedAt DateTime @updatedAt
+  
+  @@map("settings")
 }
