@@ -1,6 +1,5 @@
 // API Pool Manager - Manages multiple API keys for concurrent requests
 import { db } from './db';
-import { encrypt, decrypt } from './encryption';
 
 export type APIProvider = 'zai' | 'openrouter' | 'groq';
 
@@ -20,6 +19,16 @@ interface QueueItem {
   resolve: (value: string) => void;
   reject: (error: Error) => void;
   sessionId: string;
+}
+
+// Encryption utilities for API keys
+export function encryptApiKey(text: string): string {
+  // Simple base64 encoding for now - in production use proper encryption
+  return Buffer.from(text).toString('base64');
+}
+
+export function decryptApiKey(encrypted: string): string {
+  return Buffer.from(encrypted, 'base64').toString('utf-8');
 }
 
 class APIPoolManager {
@@ -64,7 +73,7 @@ class APIPoolManager {
         return {
           id: key.id,
           provider: key.provider as APIProvider,
-          key: decrypt(key.key),
+          key: decryptApiKey(key.key),
           name: key.name,
           inUse: false,
           requestCount: key.requestCount,
@@ -77,7 +86,7 @@ class APIPoolManager {
   }
 
   // Lock API key to a session
-  async lockKey(keyId: string, sessionId: string): Promise<void> {
+  async lockKey(keyId: string, _sessionId: string): Promise<void> {
     this.processing.set(keyId, true);
     await db.aPIKey.update({
       where: { id: keyId },
@@ -307,20 +316,6 @@ class APIPoolManager {
     };
   }
 }
-
-// Encryption utilities for API keys
-export const encryption = {
-  encrypt: (text: string): string => {
-    // Simple base64 encoding for now - in production use proper encryption
-    return Buffer.from(text).toString('base64');
-  },
-  decrypt: (encrypted: string): string => {
-    return Buffer.from(encrypted, 'base64').toString('utf-8');
-  }
-};
-
-export const encrypt = encryption.encrypt;
-export const decrypt = encryption.decrypt;
 
 // Singleton instance
 export const apiPool = new APIPoolManager();

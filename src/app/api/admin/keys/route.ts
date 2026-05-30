@@ -1,7 +1,7 @@
-// Admin API Keys Management
+// Admin API Keys Management - Updated
 import { NextRequest, NextResponse } from 'next/server';
 import { db } from '@/lib/db';
-import { encrypt } from '@/lib/api-pool';
+import { encryptApiKey } from '@/lib/api-pool';
 
 // GET - List all API keys
 export async function GET(request: NextRequest) {
@@ -53,7 +53,7 @@ export async function POST(request: NextRequest) {
     }
 
     // Encrypt the key
-    const encryptedKey = encrypt(key);
+    const encryptedKey = encryptApiKey(key);
 
     const apiKey = await db.aPIKey.create({
       data: {
