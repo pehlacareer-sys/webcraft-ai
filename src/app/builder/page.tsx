@@ -7,6 +7,9 @@ import { Badge } from '@/components/ui/badge';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 import { ScrollArea } from '@/components/ui/scroll-area';
+import { Switch } from '@/components/ui/switch';
+import { Label } from '@/components/ui/label';
+import { Progress } from '@/components/ui/progress';
 import { 
   ArrowLeft, 
   Send, 
@@ -31,7 +34,11 @@ import {
   Sparkles,
   AlertCircle,
   CheckCircle2,
-  Clock
+  Clock,
+  Lightbulb,
+  Hammer,
+  Zap,
+  FileText
 } from 'lucide-react';
 import Link from 'next/link';
 import { motion, AnimatePresence } from 'framer-motion';
@@ -41,12 +48,21 @@ interface Message {
   role: 'user' | 'assistant' | 'system';
   content: string;
   timestamp: Date;
+  type?: 'text' | 'plan' | 'code';
+}
+
+interface PlanSection {
+  title: string;
+  content: string;
 }
 
 export default function BuilderPage() {
   const [prompt, setPrompt] = useState('');
   const [code, setCode] = useState('');
+  const [plan, setPlan] = useState<PlanSection[]>([]);
   const [isLoading, setIsLoading] = useState(false);
+  const [progress, setProgress] = useState(0);
+  const [currentProvider, setCurrentProvider] = useState<string>('');
   const [sessionId, setSessionId] = useState<string | null>(null);
   const [messages, setMessages] = useState<Message[]>([]);
   const [viewMode, setViewMode] = useState<'split' | 'code' | 'preview'>('split');
@@ -55,6 +71,8 @@ export default function BuilderPage() {
   const [sidebarOpen, setSidebarOpen] = useState(true);
   const [isSaved, setIsSaved] = useState(true);
   const [activeTab, setActiveTab] = useState('chat');
+  const [planMode, setPlanMode] = useState(true);
+  const [streamingText, setStreamingText] = useState('');
   
   const iframeRef = useRef<HTMLIFrameElement>(null);
   const messagesEndRef = useRef<HTMLDivElement>(null);
@@ -72,13 +90,41 @@ export default function BuilderPage() {
   // Auto-scroll to bottom of messages
   useEffect(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
-  }, [messages]);
+  }, [messages, streamingText]);
 
-  // Generate code
+  // Parse plan from text
+  const parsePlan = (text: string): PlanSection[] => {
+    const sections: PlanSection[] = [];
+    const lines = text.split('\n');
+    let currentSection = '';
+    let currentContent = '';
+    
+    for (const line of lines) {
+      if (line.startsWith('## ') || line.startsWith('### ')) {
+        if (currentSection) {
+          sections.push({ title: currentSection, content: currentContent.trim() });
+        }
+        currentSection = line.replace(/^##+ /, '');
+        currentContent = '';
+      } else {
+        currentContent += line + '\n';
+      }
+    }
+    
+    if (currentSection) {
+      sections.push({ title: currentSection, content: currentContent.trim() });
+    }
+    
+    return sections.length > 0 ? sections : [{ title: 'Plan', content: text }];
+  };
+
+  // Generate with streaming
   const handleGenerate = useCallback(async () => {
     if (!prompt.trim() || isLoading) return;
 
     setIsLoading(true);
+    setProgress(0);
+    setStreamingText('');
     setIsSaved(false);
     
     // Add user message
@@ -91,48 +137,99 @@ export default function BuilderPage() {
     setMessages(prev => [...prev, userMessage]);
 
     try {
-      const response = await fetch('/api/generate', {
+      const response = await fetch('/api/generate-stream', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           prompt,
           sessionId,
-          type: 'website'
+          mode: planMode ? 'plan' : 'develop',
+          existingCode: code
         })
       });
 
-      const data = await response.json();
-
-      if (data.success) {
-        setCode(data.code);
-        setSessionId(data.sessionId);
-        
-        const assistantMessage: Message = {
-          id: (Date.now() + 1).toString(),
-          role: 'assistant',
-          content: 'I\'ve generated your website. You can see the preview on the right. Let me know if you\'d like any changes!',
-          timestamp: new Date()
-        };
-        setMessages(prev => [...prev, assistantMessage]);
-        
-        if (data.demo) {
-          const systemMessage: Message = {
-            id: (Date.now() + 2).toString(),
-            role: 'system',
-            content: 'Demo mode active. Add API keys in the admin panel for real AI generation.',
-            timestamp: new Date()
-          };
-          setMessages(prev => [...prev, systemMessage]);
-        }
-      } else {
-        const errorMessage: Message = {
-          id: (Date.now() + 1).toString(),
-          role: 'system',
-          content: `Error: ${data.error}`,
-          timestamp: new Date()
-        };
-        setMessages(prev => [...prev, errorMessage]);
+      if (!response.ok) {
+        throw new Error('Failed to connect to generation service');
       }
+
+      const reader = response.body?.getReader();
+      const decoder = new TextDecoder();
+      let accumulatedCode = '';
+      let accumulatedPlan = '';
+
+      if (reader) {
+        while (true) {
+          const { done, value } = await reader.read();
+          if (done) break;
+
+          const chunk = decoder.decode(value, { stream: true });
+          const lines = chunk.split('\n');
+
+          for (const line of lines) {
+            if (line.startsWith('data: ')) {
+              try {
+                const data = JSON.parse(line.slice(6));
+                
+                switch (data.type) {
+                  case 'progress':
+                    setProgress(data.progress);
+                    break;
+                  case 'provider':
+                    setCurrentProvider(data.provider);
+                    break;
+                  case 'plan':
+                    accumulatedPlan += data.chunk || '';
+                    setStreamingText(accumulatedPlan);
+                    break;
+                  case 'code':
+                    accumulatedCode += data.chunk || '';
+                    setStreamingText(accumulatedCode);
+                    break;
+                  case 'done':
+                    if (data.mode === 'plan') {
+                      const parsedPlan = parsePlan(data.plan || accumulatedPlan);
+                      setPlan(parsedPlan);
+                      
+                      const planMessage: Message = {
+                        id: (Date.now() + 1).toString(),
+                        role: 'assistant',
+                        content: data.plan || accumulatedPlan,
+                        timestamp: new Date(),
+                        type: 'plan'
+                      };
+                      setMessages(prev => [...prev, planMessage]);
+                    } else {
+                      setCode(data.code || accumulatedCode);
+                      
+                      const codeMessage: Message = {
+                        id: (Date.now() + 1).toString(),
+                        role: 'assistant',
+                        content: 'I\'ve generated your website code. Check the preview on the right!',
+                        timestamp: new Date(),
+                        type: 'code'
+                      };
+                      setMessages(prev => [...prev, codeMessage]);
+                    }
+                    setSessionId(data.sessionId);
+                    break;
+                  case 'error':
+                    const errorMessage: Message = {
+                      id: (Date.now() + 1).toString(),
+                      role: 'system',
+                      content: `Error: ${data.error}`,
+                      timestamp: new Date()
+                    };
+                    setMessages(prev => [...prev, errorMessage]);
+                    break;
+                }
+              } catch (e) {
+                // Skip invalid JSON
+              }
+            }
+          }
+        }
+      }
+
     } catch (error) {
       console.error('Generation error:', error);
       const errorMessage: Message = {
@@ -144,9 +241,11 @@ export default function BuilderPage() {
       setMessages(prev => [...prev, errorMessage]);
     } finally {
       setIsLoading(false);
+      setProgress(0);
+      setStreamingText('');
       setPrompt('');
     }
-  }, [prompt, isLoading, sessionId]);
+  }, [prompt, isLoading, sessionId, planMode, code]);
 
   // Handle key press
   const handleKeyDown = (e: React.KeyboardEvent) => {
@@ -225,9 +324,33 @@ export default function BuilderPage() {
                 Session Active
               </Badge>
             )}
+            {currentProvider && isLoading && (
+              <Badge variant="outline" className="bg-blue-500/10 text-blue-400 border-blue-500/30">
+                <Zap className="w-3 h-3 mr-1" />
+                {currentProvider}
+              </Badge>
+            )}
           </div>
 
           <div className="flex items-center gap-2">
+            {/* Plan Mode Toggle */}
+            <div className="flex items-center gap-2 px-3 py-1.5 bg-gray-800 rounded-lg">
+              <Label htmlFor="plan-mode" className="text-xs text-gray-400 flex items-center gap-1.5">
+                <Lightbulb className="w-3.5 h-3.5" />
+                Plan
+              </Label>
+              <Switch
+                id="plan-mode"
+                checked={planMode}
+                onCheckedChange={setPlanMode}
+                className="data-[state=checked]:bg-emerald-600"
+              />
+              <Label className="text-xs text-gray-400 flex items-center gap-1.5">
+                <Hammer className="w-3.5 h-3.5" />
+                Build
+              </Label>
+            </div>
+
             {/* View Mode Toggle */}
             <div className="hidden sm:flex items-center bg-gray-800 rounded-lg p-0.5">
               <Button
@@ -334,6 +457,10 @@ export default function BuilderPage() {
                         <MessageSquare className="w-4 h-4" />
                         Chat
                       </TabsTrigger>
+                      <TabsTrigger value="plan" className="flex-1 gap-1.5 data-[state=active]:bg-gray-700">
+                        <FileText className="w-4 h-4" />
+                        Plan
+                      </TabsTrigger>
                       <TabsTrigger value="files" className="flex-1 gap-1.5 data-[state=active]:bg-gray-700">
                         <File className="w-4 h-4" />
                         Files
@@ -351,8 +478,14 @@ export default function BuilderPage() {
                             <div className="w-16 h-16 mx-auto mb-4 rounded-2xl bg-gradient-to-br from-emerald-500/20 to-teal-500/20 flex items-center justify-center">
                               <Wand2 className="w-8 h-8 text-emerald-400" />
                             </div>
-                            <h3 className="text-white font-medium mb-2">Start Building</h3>
-                            <p className="text-sm text-gray-500">Describe the website you want to build</p>
+                            <h3 className="text-white font-medium mb-2">
+                              {planMode ? 'Plan Your Website' : 'Start Building'}
+                            </h3>
+                            <p className="text-sm text-gray-500">
+                              {planMode 
+                                ? 'Describe your website and I\'ll create a detailed plan'
+                                : 'Describe the website you want to build'}
+                            </p>
                             <p className="text-xs text-gray-600 mt-2">Press ⌘ + Enter to generate</p>
                           </div>
                         )}
@@ -367,6 +500,8 @@ export default function BuilderPage() {
                                 ? 'bg-emerald-500/20 ml-4 border border-emerald-500/30'
                                 : msg.role === 'system'
                                 ? 'bg-yellow-500/10 border border-yellow-500/30 text-yellow-200'
+                                : msg.type === 'plan'
+                                ? 'bg-blue-500/10 mr-4 border border-blue-500/30'
                                 : 'bg-gray-800 mr-4 border border-gray-700'
                             }`}
                           >
@@ -379,13 +514,17 @@ export default function BuilderPage() {
                                 <div className="w-6 h-6 rounded-full bg-yellow-500 flex items-center justify-center shrink-0 mt-0.5">
                                   <AlertCircle className="w-3 h-3 text-white" />
                                 </div>
+                              ) : msg.type === 'plan' ? (
+                                <div className="w-6 h-6 rounded-full bg-blue-500 flex items-center justify-center shrink-0 mt-0.5">
+                                  <Lightbulb className="w-3 h-3 text-white" />
+                                </div>
                               ) : (
                                 <div className="w-6 h-6 rounded-full bg-gradient-to-br from-emerald-500 to-teal-500 flex items-center justify-center shrink-0 mt-0.5">
                                   <Sparkles className="w-3 h-3 text-white" />
                                 </div>
                               )}
                               <div className="flex-1 min-w-0">
-                                <p className="text-sm text-gray-200 break-words">{msg.content}</p>
+                                <p className="text-sm text-gray-200 break-words whitespace-pre-wrap">{msg.content}</p>
                                 <p className="text-xs text-gray-500 mt-1">{formatTime(msg.timestamp)}</p>
                               </div>
                             </div>
@@ -396,10 +535,26 @@ export default function BuilderPage() {
                           <motion.div
                             initial={{ opacity: 0 }}
                             animate={{ opacity: 1 }}
-                            className="flex items-center gap-2 p-3 bg-gray-800 rounded-xl border border-gray-700"
+                            className="p-3 bg-gray-800 rounded-xl border border-gray-700"
                           >
-                            <Loader2 className="w-4 h-4 animate-spin text-emerald-400" />
-                            <span className="text-sm text-gray-400">Generating your website...</span>
+                            <div className="flex items-center gap-2 mb-2">
+                              <Loader2 className="w-4 h-4 animate-spin text-emerald-400" />
+                              <span className="text-sm text-gray-400">
+                                {planMode ? 'Planning your website...' : 'Generating your website...'}
+                              </span>
+                            </div>
+                            <Progress value={progress} className="h-1" />
+                            <div className="flex justify-between mt-1">
+                              <span className="text-xs text-gray-500">{progress}%</span>
+                              {currentProvider && (
+                                <span className="text-xs text-gray-500">Using {currentProvider}</span>
+                              )}
+                            </div>
+                            {streamingText && (
+                              <div className="mt-2 p-2 bg-gray-900 rounded text-xs text-gray-400 max-h-32 overflow-y-auto">
+                                <pre className="whitespace-pre-wrap">{streamingText.slice(-500)}...</pre>
+                              </div>
+                            )}
                           </motion.div>
                         )}
                         
@@ -415,7 +570,10 @@ export default function BuilderPage() {
                           value={prompt}
                           onChange={(e) => setPrompt(e.target.value)}
                           onKeyDown={handleKeyDown}
-                          placeholder="Describe changes or new features..."
+                          placeholder={planMode 
+                            ? "Describe your website idea and I'll create a plan..."
+                            : "Describe changes or new features..."
+                          }
                           className="min-h-[80px] resize-none bg-gray-800 border-gray-700 focus:border-emerald-500 focus:ring-emerald-500/20 text-white placeholder:text-gray-500 pr-12"
                           disabled={isLoading}
                         />
@@ -423,10 +581,14 @@ export default function BuilderPage() {
                           size="sm"
                           onClick={handleGenerate}
                           disabled={!prompt.trim() || isLoading}
-                          className="absolute bottom-3 right-3 bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-700 hover:to-teal-700"
+                          className={`absolute bottom-3 right-3 ${planMode 
+                            ? 'bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700' 
+                            : 'bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-700 hover:to-teal-700'}`}
                         >
                           {isLoading ? (
                             <Loader2 className="w-4 h-4 animate-spin" />
+                          ) : planMode ? (
+                            <Lightbulb className="w-4 h-4" />
                           ) : (
                             <Send className="w-4 h-4" />
                           )}
@@ -434,9 +596,72 @@ export default function BuilderPage() {
                       </div>
                       <div className="flex items-center justify-between mt-2">
                         <span className="text-xs text-gray-600">⌘ + Enter to send</span>
-                        <span className="text-xs text-gray-600">{prompt.length} characters</span>
+                        <div className="flex items-center gap-2">
+                          {planMode ? (
+                            <Badge variant="outline" className="text-blue-400 border-blue-500/30">
+                              <Lightbulb className="w-3 h-3 mr-1" />
+                              Plan Mode
+                            </Badge>
+                          ) : (
+                            <Badge variant="outline" className="text-emerald-400 border-emerald-500/30">
+                              <Hammer className="w-3 h-3 mr-1" />
+                              Build Mode
+                            </Badge>
+                          )}
+                        </div>
                       </div>
                     </div>
+                  </TabsContent>
+
+                  {/* Plan Content */}
+                  <TabsContent value="plan" className="flex-1 m-0 overflow-hidden data-[state=inactive]:hidden">
+                    <ScrollArea className="p-4 h-full">
+                      {plan.length > 0 ? (
+                        <div className="space-y-4">
+                          {plan.map((section, index) => (
+                            <motion.div
+                              key={index}
+                              initial={{ opacity: 0, y: 10 }}
+                              animate={{ opacity: 1, y: 0 }}
+                              transition={{ delay: index * 0.1 }}
+                              className="bg-gray-800 rounded-lg p-4 border border-gray-700"
+                            >
+                              <h4 className="text-sm font-medium text-emerald-400 mb-2 flex items-center gap-2">
+                                <CheckCircle2 className="w-4 h-4" />
+                                {section.title}
+                              </h4>
+                              <p className="text-sm text-gray-300 whitespace-pre-wrap">{section.content}</p>
+                            </motion.div>
+                          ))}
+                          
+                          <Button 
+                            className="w-full bg-gradient-to-r from-emerald-600 to-teal-600"
+                            onClick={() => {
+                              setPlanMode(false);
+                              // Auto-switch to build mode
+                            }}
+                          >
+                            <Hammer className="w-4 h-4 mr-2" />
+                            Start Building from Plan
+                          </Button>
+                        </div>
+                      ) : (
+                        <div className="text-center py-12">
+                          <div className="w-16 h-16 mx-auto mb-4 rounded-2xl bg-gradient-to-br from-blue-500/20 to-indigo-500/20 flex items-center justify-center">
+                            <Lightbulb className="w-8 h-8 text-blue-400" />
+                          </div>
+                          <h3 className="text-white font-medium mb-2">No Plan Yet</h3>
+                          <p className="text-sm text-gray-500 mb-4">Switch to Chat and enable Plan Mode to create a detailed specification</p>
+                          <Button 
+                            variant="outline" 
+                            onClick={() => setActiveTab('chat')}
+                            className="border-gray-700 text-gray-300"
+                          >
+                            Go to Chat
+                          </Button>
+                        </div>
+                      )}
+                    </ScrollArea>
                   </TabsContent>
 
                   {/* Files Content */}

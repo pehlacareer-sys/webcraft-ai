@@ -681,3 +681,87 @@ curl https://sitezora-ai.vercel.app/api/generate
 2. **Z.AI**: May need to check rate limits or upgrade plan
 3. **Gemini**: Can be added to the pool when ready
 4. **Supabase**: Project is awake and ready to use
+
+---
+
+## Task ID: 1 - Streaming API with Plan Mode and Development Mode
+**Status:** ✅ COMPLETED
+**Date:** Current Session
+
+### Work Log:
+
+1. **Created Streaming API Endpoint** (`src/app/api/generate-stream/route.ts`)
+   - Implemented Server-Sent Events (SSE) for real-time streaming
+   - Added progress updates during generation (0-100%)
+   - Created provider status updates (which API is being used)
+   - Support for OpenRouter, Groq, and Z.AI streaming APIs
+
+2. **Plan Mode Functionality**
+   - When `mode="plan"`, analyzes user's prompt and creates detailed specification
+   - Plan includes:
+     - Project overview (purpose, target audience, objectives)
+     - Page structure (all sections needed)
+     - Components breakdown (navigation, hero, features, testimonials, footer)
+     - Styling specifications (colors, typography, spacing)
+     - Features & interactivity (animations, hover effects)
+     - Content guidelines (tone, messaging, CTAs)
+   - Falls back to basic plan generation if no providers available
+
+3. **Development Mode Functionality**
+   - When `mode="develop"`, generates actual code with streaming
+   - Can accept a pre-generated plan as input for more accurate generation
+   - Streams code chunks in real-time with progress updates
+   - Supports existing code context for modifications
+
+4. **PLANNING_PROMPT Created**
+   - Comprehensive prompt for turning raw user input into detailed specifications
+   - Includes 6 main sections: Project Overview, Page Structure, Components, Styling, Features, Content
+   - Uses green/emerald color palette as default
+   - Returns structured markdown format
+
+5. **API Endpoint Details**
+   ```
+   POST /api/generate-stream
+   Body: { prompt, mode: 'plan' | 'develop', plan?: string, sessionId?: string, existingCode?: string }
+   
+   Response: SSE stream with messages:
+   - { type: 'progress', content: string, progress: number }
+   - { type: 'provider', content: string, provider: string }
+   - { type: 'plan', content: string }
+   - { type: 'code', content: string }
+   - { type: 'done', content: string, provider?: string }
+   - { type: 'error', content: string }
+   
+   GET /api/generate-stream
+   Returns: { providers: {...}, totalProviders: number, availableProviders: number }
+   ```
+
+### Files Created:
+| File | Description |
+|------|-------------|
+| `src/app/api/generate-stream/route.ts` | NEW - Streaming API with SSE, Plan Mode, Development Mode |
+
+### Features Implemented:
+- ✅ SSE streaming for real-time progress updates
+- ✅ Plan Mode for detailed specification generation
+- ✅ Development Mode for code generation with streaming
+- ✅ PLANNING_PROMPT for turning raw input into specs
+- ✅ Provider status updates during generation
+- ✅ Backward compatibility with existing `/api/generate` endpoint
+- ✅ Support for OpenRouter, Groq, and Z.AI APIs
+- ✅ Demo fallback when no providers available
+
+### Technical Details:
+- Uses ReadableStream for SSE implementation
+- AsyncGenerator functions for streaming API calls
+- In-memory provider pool with locking mechanism
+- Code extraction from markdown code fences
+- Progress tracking based on chunk count
+
+### Stage Summary:
+- **Streaming API**: ✅ Implemented with SSE
+- **Plan Mode**: ✅ Complete with detailed specifications
+- **Development Mode**: ✅ Streaming code generation
+- **Provider Support**: ✅ OpenRouter, Groq, Z.AI
+- **Backward Compatibility**: ✅ Existing API unchanged
+- **Lint Check**: ✅ Passed (no errors)
