@@ -412,3 +412,57 @@ Stage Summary:
 - **Production URL**: https://sitezora-ai.vercel.app
 - **Build Status**: ✅ Success
 - **All Environment Variables**: ✅ Configured
+
+---
+
+## Testing & Debugging Session (May 31, 2026)
+
+### Issue Discovered: SQLite Not Compatible with Vercel
+**Problem:** The application was using SQLite (`file:./db/custom.db`) which doesn't work on Vercel's serverless environment because:
+- SQLite is a file-based database
+- Vercel functions are ephemeral - files don't persist between invocations
+- Each function invocation runs in a fresh container
+
+### Solution Implemented
+1. **Removed Database Dependency from Generate API**
+   - Updated `/src/app/api/generate/route.ts` to use in-memory sessions
+   - API now reads keys directly from environment variables
+   - No Prisma/database calls in the generate endpoint
+
+2. **API Key Chain**
+   - Z.AI API (primary)
+   - OpenRouter API (fallback)
+   - Groq API (secondary fallback)
+   - Demo mode (final fallback)
+
+3. **Updated Prisma Schema**
+   - Changed from SQLite to PostgreSQL
+   - Will need Supabase database to be properly configured for full functionality
+
+### Files Modified
+| File | Changes |
+|------|---------|
+| `src/app/api/generate/route.ts` | Removed database dependency, use env vars directly |
+| `prisma/schema.prisma` | Changed from SQLite to PostgreSQL |
+
+### Testing Results
+- Landing Page: ✅ Working (200)
+- Builder Page: ✅ Loading correctly
+- API Generate: ⚠️ Returns error - needs further investigation
+
+### Remaining Issues
+1. **API Generation Failing**: The `/api/generate` endpoint returns `{"success":false,"error":"Failed to generate code"}`
+   - Possible causes:
+     - API keys might not be valid
+     - API endpoints might have changed
+     - Need to check individual API responses
+
+2. **Supabase Database**: Not connected - needs pooler URL for serverless
+   - Need to get connection string from Supabase dashboard
+   - Or use Supabase pooler: `postgresql://postgres.[ref]:[password]@aws-0-[region].pooler.supabase.com:6543/postgres`
+
+### Recommendations
+1. Test each API key individually to verify they work
+2. Check Supabase dashboard to see if project is active (not paused)
+3. Add proper error logging to the generate API
+4. Consider using Vercel's edge functions for better cold start performance
