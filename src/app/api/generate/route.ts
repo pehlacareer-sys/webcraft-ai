@@ -196,11 +196,12 @@ async function callOpenRouter(apiKey: string, prompt: string): Promise<string> {
 }
 
 async function callGroq(apiKey: string, prompt: string): Promise<string> {
-  // Try multiple Groq models
+  // Groq models - updated with current supported models
   const models = [
     'llama-3.3-70b-versatile',
-    'llama-3.1-70b-versatile',
-    'mixtral-8x7b-32768'
+    'llama-3.1-8b-instant',
+    'llama3-8b-8192',
+    'llama3-70b-8192'
   ];
 
   let lastError: Error | null = null;
