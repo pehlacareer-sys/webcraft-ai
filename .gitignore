@@ -52,3 +52,20 @@ prompt
 server.log
 # Skills directory
 /skills/
+
+# Sensitive files
+.env
+.env.local
+.env.*.local
+
+# IDE
+.vscode/
+.idea/
+
+# OS
+Thumbs.db
+
+# Project specific
+db/custom.db
+download/*.png
+upload/

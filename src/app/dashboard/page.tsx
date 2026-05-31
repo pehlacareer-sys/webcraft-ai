@@ -44,11 +44,13 @@ import {
   Calendar,
   Globe,
   Crown,
-  Zap
+  Zap,
+  Loader2
 } from 'lucide-react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
-import { motion, AnimatePresence } from 'framer-motion';
+import { motion } from 'framer-motion';
+import { useAuth } from '@/hooks/useAuth';
 
 interface Project {
   id: string;
@@ -84,14 +86,25 @@ const itemVariants = {
 
 export default function DashboardPage() {
   const [projects, setProjects] = useState<Project[]>([]);
-  const [isLoading, setIsLoading] = useState(true);
+  const [isLoadingProjects, setIsLoadingProjects] = useState(true);
   const [searchQuery, setSearchQuery] = useState('');
   const [deleteProjectId, setDeleteProjectId] = useState<string | null>(null);
   const router = useRouter();
+  
+  const { user, isLoading, isAuthenticated, signOut } = useAuth();
+
+  // Redirect to login if not authenticated
+  useEffect(() => {
+    if (!isLoading && !isAuthenticated) {
+      router.push('/login');
+    }
+  }, [isLoading, isAuthenticated, router]);
 
   useEffect(() => {
-    fetchProjects();
-  }, []);
+    if (isAuthenticated) {
+      fetchProjects();
+    }
+  }, [isAuthenticated]);
 
   const fetchProjects = async () => {
     try {
@@ -104,7 +117,7 @@ export default function DashboardPage() {
     } catch (error) {
       console.error('Failed to fetch projects:', error);
     } finally {
-      setIsLoading(false);
+      setIsLoadingProjects(false);
     }
   };
 
@@ -124,6 +137,10 @@ export default function DashboardPage() {
     } finally {
       setDeleteProjectId(null);
     }
+  };
+
+  const handleSignOut = async () => {
+    await signOut();
   };
 
   const handleNewProject = () => {
@@ -147,6 +164,23 @@ export default function DashboardPage() {
   const deployedCount = projects.filter(p => p.status === 'deployed').length;
   const draftCount = projects.filter(p => p.status === 'draft').length;
 
+  // Show loading state while checking auth
+  if (isLoading) {
+    return (
+      <div className="min-h-screen bg-gradient-to-b from-gray-50 to-white flex items-center justify-center">
+        <div className="text-center">
+          <Loader2 className="w-8 h-8 animate-spin mx-auto text-emerald-600" />
+          <p className="mt-4 text-gray-600">Loading...</p>
+        </div>
+      </div>
+    );
+  }
+
+  // Don't render anything if not authenticated (will redirect)
+  if (!isAuthenticated) {
+    return null;
+  }
+
   return (
     <div className="min-h-screen bg-gradient-to-b from-gray-50 to-white">
       {/* Header */}
@@ -155,7 +189,7 @@ export default function DashboardPage() {
           <div className="flex items-center justify-between h-16">
             {/* Logo */}
             <Link href="/" className="flex items-center gap-2 group">
-              <div className="w-9 h-9 rounded-xl bg-gradient-to-br from-violet-600 to-indigo-600 flex items-center justify-center shadow-lg shadow-violet-500/25 group-hover:shadow-violet-500/40 transition-shadow">
+              <div className="w-9 h-9 rounded-xl bg-gradient-to-br from-emerald-600 to-teal-600 flex items-center justify-center shadow-lg shadow-emerald-500/25 group-hover:shadow-emerald-500/40 transition-shadow">
                 <Sparkles className="w-5 h-5 text-white" />
               </div>
               <span className="font-bold text-lg text-gray-900">WebCraft AI</span>
@@ -163,9 +197,9 @@ export default function DashboardPage() {
 
             {/* Navigation */}
             <nav className="hidden md:flex items-center gap-6">
-              <Link href="/dashboard" className="text-sm font-medium text-violet-600 relative">
+              <Link href="/dashboard" className="text-sm font-medium text-emerald-600 relative">
                 Dashboard
-                <span className="absolute -bottom-1 left-0 w-full h-0.5 bg-violet-600 rounded-full" />
+                <span className="absolute -bottom-1 left-0 w-full h-0.5 bg-emerald-600 rounded-full" />
               </Link>
               <Link href="/templates" className="text-sm font-medium text-gray-600 hover:text-gray-900 transition-colors">
                 Templates
@@ -177,7 +211,7 @@ export default function DashboardPage() {
 
             {/* User Menu */}
             <div className="flex items-center gap-3">
-              <Button onClick={handleNewProject} className="bg-gradient-to-r from-violet-600 to-indigo-600 hover:from-violet-700 hover:to-indigo-700 shadow-lg shadow-violet-500/25">
+              <Button onClick={handleNewProject} className="bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-700 hover:to-teal-700 shadow-lg shadow-emerald-500/25">
                 <Plus className="w-4 h-4 mr-2" />
                 New Project
               </Button>
@@ -185,7 +219,7 @@ export default function DashboardPage() {
               <DropdownMenu>
                 <DropdownMenuTrigger asChild>
                   <Button variant="ghost" size="icon" className="rounded-full">
-                    <div className="w-9 h-9 rounded-full bg-gradient-to-br from-violet-500 to-indigo-600 flex items-center justify-center shadow-md">
+                    <div className="w-9 h-9 rounded-full bg-gradient-to-br from-emerald-500 to-teal-600 flex items-center justify-center shadow-md">
                       <User className="w-4 h-4 text-white" />
                     </div>
                   </Button>
@@ -193,25 +227,31 @@ export default function DashboardPage() {
                 <DropdownMenuContent align="end" className="w-56">
                   <DropdownMenuLabel>
                     <div className="flex flex-col">
-                      <span>John Doe</span>
-                      <span className="text-xs font-normal text-gray-500">john@example.com</span>
+                      <span>{user?.user_metadata?.full_name || 'User'}</span>
+                      <span className="text-xs font-normal text-gray-500">{user?.email}</span>
                     </div>
                   </DropdownMenuLabel>
                   <DropdownMenuSeparator />
-                  <DropdownMenuItem>
-                    <User className="w-4 h-4 mr-2" />
-                    Profile
+                  <DropdownMenuItem asChild>
+                    <Link href="/settings">
+                      <User className="w-4 h-4 mr-2" />
+                      Profile
+                    </Link>
                   </DropdownMenuItem>
-                  <DropdownMenuItem>
-                    <Settings className="w-4 h-4 mr-2" />
-                    Settings
+                  <DropdownMenuItem asChild>
+                    <Link href="/settings">
+                      <Settings className="w-4 h-4 mr-2" />
+                      Settings
+                    </Link>
                   </DropdownMenuItem>
-                  <DropdownMenuItem>
-                    <Crown className="w-4 h-4 mr-2" />
-                    Upgrade Plan
+                  <DropdownMenuItem asChild>
+                    <Link href="/pricing">
+                      <Crown className="w-4 h-4 mr-2" />
+                      Upgrade Plan
+                    </Link>
                   </DropdownMenuItem>
                   <DropdownMenuSeparator />
-                  <DropdownMenuItem className="text-red-600">
+                  <DropdownMenuItem className="text-red-600" onClick={handleSignOut}>
                     <LogOut className="w-4 h-4 mr-2" />
                     Sign out
                   </DropdownMenuItem>
@@ -230,7 +270,9 @@ export default function DashboardPage() {
           animate={{ opacity: 1, y: 0 }}
           className="mb-8"
         >
-          <h1 className="text-3xl font-bold text-gray-900">Welcome back! 👋</h1>
+          <h1 className="text-3xl font-bold text-gray-900">
+            Welcome back{user?.user_metadata?.full_name ? `, ${user.user_metadata.full_name.split(' ')[0]}` : ''}! 👋
+          </h1>
           <p className="text-gray-600 mt-1">Manage your projects and create new websites with AI.</p>
         </motion.div>
 
@@ -241,7 +283,7 @@ export default function DashboardPage() {
           transition={{ delay: 0.1 }}
           className="grid sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-8"
         >
-          <Card className="border-0 shadow-lg bg-gradient-to-br from-violet-500 to-indigo-600 text-white">
+          <Card className="border-0 shadow-lg bg-gradient-to-br from-emerald-500 to-teal-600 text-white">
             <CardContent className="pt-6">
               <div className="flex items-center justify-between">
                 <div>
@@ -341,7 +383,7 @@ export default function DashboardPage() {
             </CardHeader>
             
             <CardContent className="p-6">
-              {isLoading ? (
+              {isLoadingProjects ? (
                 <div className="text-center py-16">
                   <div className="w-16 h-16 mx-auto mb-4 rounded-full bg-gray-100 flex items-center justify-center">
                     <LayoutDashboard className="w-8 h-8 text-gray-400 animate-pulse" />
@@ -354,8 +396,8 @@ export default function DashboardPage() {
                   animate={{ opacity: 1, scale: 1 }}
                   className="text-center py-16"
                 >
-                  <div className="w-20 h-20 mx-auto mb-6 rounded-2xl bg-gradient-to-br from-violet-100 to-indigo-100 flex items-center justify-center">
-                    <FolderOpen className="w-10 h-10 text-violet-600" />
+                  <div className="w-20 h-20 mx-auto mb-6 rounded-2xl bg-gradient-to-br from-emerald-100 to-teal-100 flex items-center justify-center">
+                    <FolderOpen className="w-10 h-10 text-emerald-600" />
                   </div>
                   <h3 className="text-xl font-semibold text-gray-900 mb-2">
                     {searchQuery ? 'No projects found' : 'No projects yet'}
@@ -366,7 +408,7 @@ export default function DashboardPage() {
                       : 'Create your first website with AI. It only takes a few seconds.'}
                   </p>
                   {!searchQuery && (
-                    <Button onClick={handleNewProject} size="lg" className="bg-gradient-to-r from-violet-600 to-indigo-600 hover:from-violet-700 hover:to-indigo-700 shadow-lg shadow-violet-500/25">
+                    <Button onClick={handleNewProject} size="lg" className="bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-700 hover:to-teal-700 shadow-lg shadow-emerald-500/25">
                       <Plus className="w-5 h-5 mr-2" />
                       Create Your First Project
                     </Button>
@@ -390,7 +432,7 @@ export default function DashboardPage() {
                         whileHover={{ y: -4 }}
                         className="group"
                       >
-                        <Card className="overflow-hidden border border-gray-200 hover:border-violet-200 hover:shadow-xl transition-all duration-300">
+                        <Card className="overflow-hidden border border-gray-200 hover:border-emerald-200 hover:shadow-xl transition-all duration-300">
                           {/* Project Preview */}
                           <div className="h-36 bg-gradient-to-br from-gray-100 to-gray-200 relative overflow-hidden">
                             <div className="absolute inset-0 bg-[url('data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNjAiIGhlaWdodD0iNjAiIHZpZXdCb3g9IjAgMCA2MCA2MCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48ZyBmaWxsPSJub25lIiBmaWxsLXJ1bGU9ImV2ZW5vZGQiPjxwYXRoIGQ9Ik0zNiAxOGMtOS45NDEgMC0xOCA4LjA1OS0xOCAxOHM4LjA1OSAxOCAxOCAxOGM5Ljk0MSAwIDE4LTguMDU5IDE4LTE4cy04LjA1OS0xOC0xOC0xOHptMCAzMmMtNy43MzIgMC0xNC02LjI2OC0xNC0xNHM2LjI2OC0xNCAxNC0xNHMxNCA2LjI2OCAxNCAxNC02LjI2OCAxNC0xNCAxNHoiIGZpbGw9IiNlNWU3ZWIiIGZpbGwtb3BhY2l0eT0iMC41Ii8+PC9nPjwvc3ZnPg==')] opacity-50" />
@@ -464,7 +506,7 @@ export default function DashboardPage() {
                               </span>
                               <Link 
                                 href={`/builder?project=${project.id}`}
-                                className="text-violet-600 hover:text-violet-700 font-medium"
+                                className="text-emerald-600 hover:text-emerald-700 font-medium"
                               >
                                 Open →
                               </Link>

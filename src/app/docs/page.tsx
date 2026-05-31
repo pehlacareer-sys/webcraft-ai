@@ -145,7 +145,7 @@ export default function DocsPage() {
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex items-center justify-between h-16">
             <Link href="/" className="flex items-center gap-2 group">
-              <div className="w-9 h-9 rounded-xl bg-gradient-to-br from-violet-600 to-indigo-600 flex items-center justify-center shadow-lg shadow-violet-500/25 group-hover:shadow-violet-500/40 transition-shadow">
+              <div className="w-9 h-9 rounded-xl bg-gradient-to-br from-emerald-600 to-teal-600 flex items-center justify-center shadow-lg shadow-emerald-500/25 group-hover:shadow-emerald-500/40 transition-shadow">
                 <Sparkles className="w-5 h-5 text-white" />
               </div>
               <span className="font-bold text-lg text-gray-900">WebCraft AI</span>
@@ -158,9 +158,9 @@ export default function DocsPage() {
               <Link href="/pricing" className="text-sm font-medium text-gray-600 hover:text-gray-900 transition-colors">
                 Pricing
               </Link>
-              <Link href="/docs" className="text-sm font-medium text-violet-600 relative">
+              <Link href="/docs" className="text-sm font-medium text-emerald-600 relative">
                 Docs
-                <span className="absolute -bottom-1 left-0 w-full h-0.5 bg-violet-600 rounded-full" />
+                <span className="absolute -bottom-1 left-0 w-full h-0.5 bg-emerald-600 rounded-full" />
               </Link>
             </nav>
 
@@ -183,13 +183,13 @@ export default function DocsPage() {
       {/* Main Content */}
       <main className="flex-1">
         {/* Hero Section */}
-        <section className="py-16 px-4 sm:px-6 lg:px-8 bg-gradient-to-b from-violet-50 to-white">
+        <section className="py-16 px-4 sm:px-6 lg:px-8 bg-gradient-to-b from-emerald-50 to-white">
           <div className="max-w-4xl mx-auto text-center">
             <motion.div
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
             >
-              <Badge variant="secondary" className="mb-4 px-4 py-1 bg-violet-50 text-violet-700 border-violet-200">
+              <Badge variant="secondary" className="mb-4 px-4 py-1 bg-emerald-50 text-emerald-700 border-emerald-200">
                 <Book className="w-4 h-4 mr-2" />
                 Documentation
               </Badge>
@@ -226,10 +226,10 @@ export default function DocsPage() {
                   animate={{ opacity: 1, y: 0 }}
                   transition={{ delay: index * 0.05 }}
                 >
-                  <Card className="h-full border border-gray-200 hover:border-violet-200 hover:shadow-lg transition-all duration-300 group">
+                  <Card className="h-full border border-gray-200 hover:border-emerald-200 hover:shadow-lg transition-all duration-300 group">
                     <CardHeader>
-                      <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-violet-100 to-indigo-100 flex items-center justify-center mb-4 group-hover:scale-110 transition-transform">
-                        <guide.icon className="w-6 h-6 text-violet-600" />
+                      <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-emerald-100 to-teal-100 flex items-center justify-center mb-4 group-hover:scale-110 transition-transform">
+                        <guide.icon className="w-6 h-6 text-emerald-600" />
                       </div>
                       <CardTitle className="text-lg">{guide.title}</CardTitle>
                       <CardDescription>{guide.description}</CardDescription>
@@ -240,7 +240,7 @@ export default function DocsPage() {
                           <li key={i}>
                             <a 
                               href={item.href}
-                              className="flex items-center text-sm text-gray-600 hover:text-violet-600 transition-colors"
+                              className="flex items-center text-sm text-gray-600 hover:text-emerald-600 transition-colors"
                             >
                               <ChevronRight className="w-4 h-4 mr-1" />
                               {item.title}
@@ -271,13 +271,13 @@ export default function DocsPage() {
                 <Card className="border-0 shadow-lg">
                   <CardHeader>
                     <div className="flex items-center gap-3">
-                      <div className="w-8 h-8 rounded-full bg-violet-600 text-white flex items-center justify-center font-bold">1</div>
+                      <div className="w-8 h-8 rounded-full bg-emerald-600 text-white flex items-center justify-center font-bold">1</div>
                       <CardTitle>Create an Account</CardTitle>
                     </div>
                   </CardHeader>
                   <CardContent>
                     <p className="text-gray-600">
-                      Sign up for a free account at <Link href="/signup" className="text-violet-600 hover:underline">webcraft.ai/signup</Link>. 
+                      Sign up for a free account at <Link href="/signup" className="text-emerald-600 hover:underline">webcraft.ai/signup</Link>. 
                       You&apos;ll get access to 5 free projects and basic AI generation.
                     </p>
                   </CardContent>
@@ -286,7 +286,7 @@ export default function DocsPage() {
                 <Card className="border-0 shadow-lg">
                   <CardHeader>
                     <div className="flex items-center gap-3">
-                      <div className="w-8 h-8 rounded-full bg-violet-600 text-white flex items-center justify-center font-bold">2</div>
+                      <div className="w-8 h-8 rounded-full bg-emerald-600 text-white flex items-center justify-center font-bold">2</div>
                       <CardTitle>Configure API Keys (Optional)</CardTitle>
                     </div>
                   </CardHeader>
@@ -296,7 +296,7 @@ export default function DocsPage() {
                       Go to the Admin Panel to configure your keys.
                     </p>
                     <div className="flex flex-wrap gap-2">
-                      <Badge className="bg-violet-100 text-violet-700">Z.AI</Badge>
+                      <Badge className="bg-emerald-100 text-emerald-700">Z.AI</Badge>
                       <Badge className="bg-blue-100 text-blue-700">OpenRouter</Badge>
                       <Badge className="bg-green-100 text-green-700">Groq</Badge>
                     </div>
@@ -306,7 +306,7 @@ export default function DocsPage() {
                 <Card className="border-0 shadow-lg">
                   <CardHeader>
                     <div className="flex items-center gap-3">
-                      <div className="w-8 h-8 rounded-full bg-violet-600 text-white flex items-center justify-center font-bold">3</div>
+                      <div className="w-8 h-8 rounded-full bg-emerald-600 text-white flex items-center justify-center font-bold">3</div>
                       <CardTitle>Generate Your First Website</CardTitle>
                     </div>
                   </CardHeader>
@@ -374,7 +374,7 @@ export default function DocsPage() {
         </section>
 
         {/* Tips Section */}
-        <section className="py-16 px-4 sm:px-6 lg:px-8 bg-gradient-to-br from-violet-600 to-indigo-700">
+        <section className="py-16 px-4 sm:px-6 lg:px-8 bg-gradient-to-br from-emerald-600 to-teal-700">
           <div className="max-w-4xl mx-auto">
             <motion.div
               initial={{ opacity: 0, y: 20 }}
@@ -410,7 +410,7 @@ export default function DocsPage() {
             </p>
             <div className="flex flex-col sm:flex-row justify-center gap-4">
               <Link href="/contact">
-                <Button size="lg" className="bg-gradient-to-r from-violet-600 to-indigo-600 hover:from-violet-700 hover:to-indigo-700">
+                <Button size="lg" className="bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-700 hover:to-teal-700">
                   Contact Support
                   <ExternalLink className="w-4 h-4 ml-2" />
                 </Button>
@@ -432,7 +432,7 @@ export default function DocsPage() {
           <div className="grid sm:grid-cols-4 gap-8">
             <div className="sm:col-span-1">
               <div className="flex items-center gap-2 mb-4">
-                <div className="w-9 h-9 rounded-xl bg-gradient-to-br from-violet-600 to-indigo-600 flex items-center justify-center shadow-lg">
+                <div className="w-9 h-9 rounded-xl bg-gradient-to-br from-emerald-600 to-teal-600 flex items-center justify-center shadow-lg">
                   <Sparkles className="w-5 h-5 text-white" />
                 </div>
                 <span className="font-bold text-lg">WebCraft AI</span>

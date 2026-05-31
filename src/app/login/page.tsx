@@ -1,50 +1,92 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Separator } from '@/components/ui/separator';
-import { Github, Mail, Loader2, Sparkles } from 'lucide-react';
+import { Github, Mail, Loader2, Sparkles, AlertCircle, CheckCircle } from 'lucide-react';
 import Link from 'next/link';
-import { useRouter } from 'next/navigation';
+import { useRouter, useSearchParams } from 'next/navigation';
 
 export default function LoginPage() {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState('');
+  const [success, setSuccess] = useState('');
   const router = useRouter();
+  const searchParams = useSearchParams();
+
+  useEffect(() => {
+    // Check for messages from redirect
+    const message = searchParams.get('message');
+    const errorParam = searchParams.get('error');
+    
+    if (message) {
+      setSuccess(decodeURIComponent(message));
+    }
+    if (errorParam) {
+      setError(decodeURIComponent(errorParam));
+    }
+  }, [searchParams]);
 
   const handleEmailLogin = async (e: React.FormEvent) => {
     e.preventDefault();
     setIsLoading(true);
     setError('');
+    setSuccess('');
 
     try {
-      // Simulate login - in production, call Supabase auth
-      await new Promise(resolve => setTimeout(resolve, 1000));
-      
-      // For demo, redirect to dashboard
+      const response = await fetch('/api/auth/login', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email, password })
+      });
+
+      const data = await response.json();
+
+      if (!data.success) {
+        setError(data.error || 'Failed to sign in');
+        return;
+      }
+
+      // Redirect to dashboard on success
       router.push('/dashboard');
+      router.refresh();
     } catch (err) {
-      setError('Invalid email or password');
+      setError('An unexpected error occurred. Please try again.');
     } finally {
       setIsLoading(false);
     }
   };
 
-  const handleSocialLogin = async (provider: string) => {
+  const handleSocialLogin = async (provider: 'google' | 'github') => {
     setIsLoading(true);
-    
+    setError('');
+
     try {
-      // Simulate social login
-      await new Promise(resolve => setTimeout(resolve, 1000));
-      router.push('/dashboard');
+      const response = await fetch('/api/auth/oauth', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ provider })
+      });
+
+      const data = await response.json();
+
+      if (!data.success) {
+        setError(data.error || `Failed to login with ${provider}`);
+        setIsLoading(false);
+        return;
+      }
+
+      // Redirect to OAuth provider
+      if (data.url) {
+        window.location.href = data.url;
+      }
     } catch (err) {
-      setError(`Failed to login with ${provider}`);
-    } finally {
+      setError(`Failed to initiate ${provider} login`);
       setIsLoading(false);
     }
   };
@@ -55,7 +97,7 @@ export default function LoginPage() {
         {/* Logo */}
         <div className="text-center mb-8">
           <Link href="/" className="inline-flex items-center gap-2 mb-4">
-            <div className="w-10 h-10 rounded-lg bg-gradient-to-br from-violet-600 to-indigo-600 flex items-center justify-center">
+            <div className="w-10 h-10 rounded-lg bg-gradient-to-br from-emerald-600 to-teal-600 flex items-center justify-center">
               <Sparkles className="w-6 h-6 text-white" />
             </div>
             <span className="font-bold text-xl text-gray-900">WebCraft AI</span>
@@ -71,12 +113,28 @@ export default function LoginPage() {
           </CardHeader>
           
           <CardContent className="space-y-4">
+            {/* Success Message */}
+            {success && (
+              <div className="flex items-center gap-2 p-3 bg-emerald-50 border border-emerald-200 rounded-lg text-emerald-700 text-sm">
+                <CheckCircle className="w-4 h-4 shrink-0" />
+                <span>{success}</span>
+              </div>
+            )}
+
+            {/* Error Message */}
+            {error && (
+              <div className="flex items-center gap-2 p-3 bg-red-50 border border-red-200 rounded-lg text-red-700 text-sm">
+                <AlertCircle className="w-4 h-4 shrink-0" />
+                <span>{error}</span>
+              </div>
+            )}
+
             {/* Social Login */}
             <div className="grid gap-2">
               <Button 
                 variant="outline" 
                 className="w-full"
-                onClick={() => handleSocialLogin('Google')}
+                onClick={() => handleSocialLogin('google')}
                 disabled={isLoading}
               >
                 <svg className="w-5 h-5 mr-2" viewBox="0 0 24 24">
@@ -91,7 +149,7 @@ export default function LoginPage() {
               <Button 
                 variant="outline" 
                 className="w-full"
-                onClick={() => handleSocialLogin('GitHub')}
+                onClick={() => handleSocialLogin('github')}
                 disabled={isLoading}
               >
                 <Github className="w-5 h-5 mr-2" />
@@ -119,13 +177,14 @@ export default function LoginPage() {
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
                   required
+                  disabled={isLoading}
                 />
               </div>
               
               <div className="space-y-2">
                 <div className="flex items-center justify-between">
                   <Label htmlFor="password">Password</Label>
-                  <Link href="/forgot-password" className="text-sm text-violet-600 hover:underline">
+                  <Link href="/forgot-password" className="text-sm text-emerald-600 hover:underline">
                     Forgot password?
                   </Link>
                 </div>
@@ -136,14 +195,11 @@ export default function LoginPage() {
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
                   required
+                  disabled={isLoading}
                 />
               </div>
 
-              {error && (
-                <p className="text-sm text-red-600">{error}</p>
-              )}
-
-              <Button type="submit" className="w-full bg-violet-600 hover:bg-violet-700" disabled={isLoading}>
+              <Button type="submit" className="w-full bg-emerald-600 hover:bg-emerald-700" disabled={isLoading}>
                 {isLoading ? (
                   <>
                     <Loader2 className="w-4 h-4 mr-2 animate-spin" />
@@ -159,8 +215,8 @@ export default function LoginPage() {
             </form>
 
             <p className="text-center text-sm text-gray-600">
-              Don't have an account?{' '}
-              <Link href="/signup" className="text-violet-600 hover:underline font-medium">
+              Don&apos;t have an account?{' '}
+              <Link href="/signup" className="text-emerald-600 hover:underline font-medium">
                 Sign up
               </Link>
             </p>

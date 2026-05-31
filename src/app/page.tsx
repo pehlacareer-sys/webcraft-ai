@@ -37,7 +37,7 @@ const features = [
     icon: Code2,
     title: 'AI-Powered Generation',
     description: 'Generate complete websites from natural language descriptions using advanced AI models.',
-    gradient: 'from-violet-500 to-purple-600'
+    gradient: 'from-emerald-500 to-teal-600'
   },
   {
     icon: Palette,
@@ -67,7 +67,7 @@ const features = [
     icon: Globe,
     title: '100% Free to Start',
     description: 'No upfront costs. Start building for free and scale only when you need to.',
-    gradient: 'from-cyan-500 to-blue-600'
+    gradient: 'from-cyan-500 to-teal-600'
   }
 ];
 
@@ -163,7 +163,7 @@ export default function LandingPage() {
           <div className="flex items-center justify-between h-16">
             {/* Logo */}
             <Link href="/" className="flex items-center gap-2 group">
-              <div className="w-9 h-9 rounded-xl bg-gradient-to-br from-violet-600 to-indigo-600 flex items-center justify-center shadow-lg shadow-violet-500/25 group-hover:shadow-violet-500/40 transition-shadow">
+              <div className="w-9 h-9 rounded-xl bg-gradient-to-br from-emerald-600 to-teal-600 flex items-center justify-center shadow-lg shadow-emerald-500/25 group-hover:shadow-emerald-500/40 transition-shadow">
                 <Sparkles className="w-5 h-5 text-white" />
               </div>
               <span className="font-bold text-lg text-gray-900">WebCraft AI</span>
@@ -173,15 +173,15 @@ export default function LandingPage() {
             <div className="hidden md:flex items-center gap-8">
               <Link href="/templates" className="text-sm font-medium text-gray-600 hover:text-gray-900 transition-colors relative group">
                 Templates
-                <span className="absolute -bottom-1 left-0 w-0 h-0.5 bg-violet-600 group-hover:w-full transition-all" />
+                <span className="absolute -bottom-1 left-0 w-0 h-0.5 bg-emerald-600 group-hover:w-full transition-all" />
               </Link>
               <Link href="/pricing" className="text-sm font-medium text-gray-600 hover:text-gray-900 transition-colors relative group">
                 Pricing
-                <span className="absolute -bottom-1 left-0 w-0 h-0.5 bg-violet-600 group-hover:w-full transition-all" />
+                <span className="absolute -bottom-1 left-0 w-0 h-0.5 bg-emerald-600 group-hover:w-full transition-all" />
               </Link>
               <Link href="/docs" className="text-sm font-medium text-gray-600 hover:text-gray-900 transition-colors relative group">
                 Docs
-                <span className="absolute -bottom-1 left-0 w-0 h-0.5 bg-violet-600 group-hover:w-full transition-all" />
+                <span className="absolute -bottom-1 left-0 w-0 h-0.5 bg-emerald-600 group-hover:w-full transition-all" />
               </Link>
             </div>
 
@@ -247,12 +247,12 @@ export default function LandingPage() {
         {/* Hero Section - Chat Box */}
         <section className="relative min-h-[calc(100vh-4rem)] flex items-center justify-center px-4 sm:px-6 lg:px-8 overflow-hidden">
           {/* Background Effects */}
-          <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_top,_var(--tw-gradient-stops))] from-violet-50 via-white to-white" />
+          <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_top,_var(--tw-gradient-stops))] from-emerald-50 via-white to-white" />
           <div className="absolute inset-0 bg-[url('data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNjAiIGhlaWdodD0iNjAiIHZpZXdCb3g9IjAgMCA2MCA2MCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48ZyBmaWxsPSJub25lIiBmaWxsLXJ1bGU9ImV2ZW5vZGQiPjxwYXRoIGQ9Ik0zNiAxOGMtOS45NDEgMC0xOCA4LjA1OS0xOCAxOHM4LjA1OSAxOCAxOCAxOGM5Ljk0MSAwIDE4LTguMDU5IDE4LTE4cy04LjA1OS0xOC0xOC0xOHptMCAzMmMtNy43MzIgMC0xNC02LjI2OC0xNC0xNHM2LjI2OC0xNCAxNC0xNHMxNCA2LjI2OCAxNCAxNC02LjI2OCAxNC0xNCAxNHoiIGZpbGw9IiNlNWU3ZWIiIGZpbGwtb3BhY2l0eT0iMC40Ii8+PC9nPjwvc3ZnPg==')] opacity-20" />
           
           {/* Floating Elements */}
-          <div className="absolute top-1/4 left-1/4 w-64 h-64 bg-violet-200 rounded-full mix-blend-multiply filter blur-3xl opacity-30 animate-pulse" />
-          <div className="absolute bottom-1/4 right-1/4 w-64 h-64 bg-indigo-200 rounded-full mix-blend-multiply filter blur-3xl opacity-30 animate-pulse delay-1000" />
+          <div className="absolute top-1/4 left-1/4 w-64 h-64 bg-emerald-200 rounded-full mix-blend-multiply filter blur-3xl opacity-30 animate-pulse" />
+          <div className="absolute bottom-1/4 right-1/4 w-64 h-64 bg-teal-200 rounded-full mix-blend-multiply filter blur-3xl opacity-30 animate-pulse delay-1000" />
 
           <div className="relative w-full max-w-4xl mx-auto">
             {/* Badge */}
@@ -262,14 +262,14 @@ export default function LandingPage() {
               transition={{ duration: 0.5 }}
               className="text-center mb-8"
             >
-              <Badge variant="secondary" className="mb-6 px-4 py-1.5 text-sm font-medium bg-gradient-to-r from-violet-50 to-indigo-50 text-violet-700 border-violet-200 shadow-sm">
+              <Badge variant="secondary" className="mb-6 px-4 py-1.5 text-sm font-medium bg-gradient-to-r from-emerald-50 to-teal-50 text-emerald-700 border-emerald-200 shadow-sm">
                 <Sparkles className="w-4 h-4 mr-2" />
                 AI-Powered Website Builder
               </Badge>
               
               <h1 className="text-4xl sm:text-5xl lg:text-6xl font-bold text-gray-900 tracking-tight mb-6">
                 Build websites with
-                <span className="block mt-2 bg-gradient-to-r from-violet-600 via-purple-600 to-indigo-600 bg-clip-text text-transparent">
+                <span className="block mt-2 bg-gradient-to-r from-emerald-600 via-teal-600 to-emerald-700 bg-clip-text text-transparent">
                   natural language
                 </span>
               </h1>
@@ -307,7 +307,7 @@ export default function LandingPage() {
                         onChange={(e) => setPrompt(e.target.value)}
                         onKeyDown={handleKeyDown}
                         placeholder="Describe the website you want to build..."
-                        className="w-full min-h-[100px] sm:min-h-[120px] resize-none border-0 bg-gray-50 focus:bg-white focus:ring-2 focus:ring-violet-500 text-gray-900 placeholder:text-gray-400 text-base sm:text-lg p-4 rounded-xl transition-all"
+                        className="w-full min-h-[100px] sm:min-h-[120px] resize-none border-0 bg-gray-50 focus:bg-white focus:ring-2 focus:ring-emerald-500 text-gray-900 placeholder:text-gray-400 text-base sm:text-lg p-4 rounded-xl transition-all"
                         rows={3}
                       />
                       <div className="absolute bottom-3 right-3 flex items-center gap-2 text-xs text-gray-400">
@@ -323,7 +323,7 @@ export default function LandingPage() {
                         <button
                           key={index}
                           onClick={() => setPrompt(suggestion)}
-                          className="text-sm px-3 py-1.5 rounded-full bg-gray-100 text-gray-600 hover:bg-violet-100 hover:text-violet-700 transition-all duration-200"
+                          className="text-sm px-3 py-1.5 rounded-full bg-gray-100 text-gray-600 hover:bg-emerald-100 hover:text-emerald-700 transition-all duration-200"
                         >
                           {suggestion}
                         </button>
@@ -346,7 +346,7 @@ export default function LandingPage() {
                         onClick={handleSubmit}
                         disabled={!prompt.trim() || isLoading}
                         size="lg"
-                        className="bg-gradient-to-r from-violet-600 to-indigo-600 hover:from-violet-700 hover:to-indigo-700 text-white px-6 sm:px-8 shadow-lg shadow-violet-500/25 hover:shadow-violet-500/40 transition-all"
+                        className="bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-700 hover:to-teal-700 text-white px-6 sm:px-8 shadow-lg shadow-emerald-500/25 hover:shadow-emerald-500/40 transition-all"
                       >
                         {isLoading ? (
                           <>
@@ -366,8 +366,8 @@ export default function LandingPage() {
               </div>
 
               {/* Decorative Elements */}
-              <div className="absolute -z-10 -top-6 -left-6 w-32 h-32 bg-violet-200 rounded-full blur-3xl opacity-40" />
-              <div className="absolute -z-10 -bottom-6 -right-6 w-40 h-40 bg-indigo-200 rounded-full blur-3xl opacity-40" />
+              <div className="absolute -z-10 -top-6 -left-6 w-32 h-32 bg-emerald-200 rounded-full blur-3xl opacity-40" />
+              <div className="absolute -z-10 -bottom-6 -right-6 w-40 h-40 bg-teal-200 rounded-full blur-3xl opacity-40" />
             </motion.div>
 
             {/* Stats */}
@@ -383,9 +383,9 @@ export default function LandingPage() {
                   initial={{ opacity: 0, scale: 0.9 }}
                   animate={{ opacity: 1, scale: 1 }}
                   transition={{ duration: 0.3, delay: 0.5 + index * 0.1 }}
-                  className="text-center p-4 rounded-xl bg-white/80 backdrop-blur border border-gray-100 hover:border-violet-200 hover:shadow-lg transition-all duration-300"
+                  className="text-center p-4 rounded-xl bg-white/80 backdrop-blur border border-gray-100 hover:border-emerald-200 hover:shadow-lg transition-all duration-300"
                 >
-                  <stat.icon className="w-5 h-5 mx-auto mb-2 text-violet-600" />
+                  <stat.icon className="w-5 h-5 mx-auto mb-2 text-emerald-600" />
                   <div className="text-2xl sm:text-3xl font-bold text-gray-900">{stat.value}</div>
                   <div className="text-sm text-gray-500">{stat.label}</div>
                 </motion.div>
@@ -403,7 +403,7 @@ export default function LandingPage() {
               viewport={{ once: true }}
               className="text-center mb-16"
             >
-              <Badge variant="secondary" className="mb-4 px-4 py-1 bg-violet-50 text-violet-700 border-violet-200">
+              <Badge variant="secondary" className="mb-4 px-4 py-1 bg-emerald-50 text-emerald-700 border-emerald-200">
                 Features
               </Badge>
               <h2 className="text-3xl sm:text-4xl lg:text-5xl font-bold text-gray-900 mb-4">
@@ -426,7 +426,7 @@ export default function LandingPage() {
                   key={index}
                   variants={itemVariants}
                   whileHover={{ y: -4 }}
-                  className="group bg-white rounded-2xl p-6 shadow-sm border border-gray-100 hover:shadow-xl hover:border-violet-100 transition-all duration-300"
+                  className="group bg-white rounded-2xl p-6 shadow-sm border border-gray-100 hover:shadow-xl hover:border-emerald-100 transition-all duration-300"
                 >
                   <div className={`w-14 h-14 rounded-xl bg-gradient-to-br ${feature.gradient} flex items-center justify-center mb-5 shadow-lg group-hover:scale-110 transition-transform duration-300`}>
                     <feature.icon className="w-7 h-7 text-white" />
@@ -448,7 +448,7 @@ export default function LandingPage() {
               viewport={{ once: true }}
               className="text-center mb-16"
             >
-              <Badge variant="secondary" className="mb-4 px-4 py-1 bg-violet-50 text-violet-700 border-violet-200">
+              <Badge variant="secondary" className="mb-4 px-4 py-1 bg-emerald-50 text-emerald-700 border-emerald-200">
                 Testimonials
               </Badge>
               <h2 className="text-3xl sm:text-4xl font-bold text-gray-900 mb-4">
@@ -470,7 +470,7 @@ export default function LandingPage() {
                   className="bg-gray-50 rounded-2xl p-6 relative"
                 >
                   <div className="flex items-center gap-4 mb-4">
-                    <div className="w-12 h-12 rounded-full bg-gradient-to-br from-violet-500 to-indigo-600 flex items-center justify-center text-white font-semibold">
+                    <div className="w-12 h-12 rounded-full bg-gradient-to-br from-emerald-500 to-teal-600 flex items-center justify-center text-white font-semibold">
                       {testimonial.avatar}
                     </div>
                     <div>
@@ -491,7 +491,7 @@ export default function LandingPage() {
         </section>
 
         {/* CTA Section */}
-        <section className="py-24 px-4 sm:px-6 lg:px-8 bg-gradient-to-br from-violet-600 to-indigo-700 relative overflow-hidden">
+        <section className="py-24 px-4 sm:px-6 lg:px-8 bg-gradient-to-br from-emerald-600 to-teal-700 relative overflow-hidden">
           {/* Background Pattern */}
           <div className="absolute inset-0 bg-[url('data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNjAiIGhlaWdodD0iNjAiIHZpZXdCb3g9IjAgMCA2MCA2MCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48ZyBmaWxsPSJub25lIiBmaWxsLXJ1bGU9ImV2ZW5vZGQiPjxwYXRoIGQ9Ik0zNiAxOGMtOS45NDEgMC0xOCA4LjA1OS0xOCAxOHM4LjA1OSAxOCAxOCAxOGM5Ljk0MSAwIDE4LTguMDU5IDE4LTE4cy04LjA1OS0xOC0xOC0xOHptMCAzMmMtNy43MzIgMC0xNC02LjI2OC0xNC0xNHM2LjI2OC0xNCAxNC0xNHMxNCA2LjI2OCAxNCAxNC02LjI2OCAxNC0xNCAxNHoiIGZpbGw9IiNmZmYiIGZpbGwtb3BhY2l0eT0iMC4xIi8+PC9nPjwvc3ZnPg==')] opacity-10" />
           
@@ -509,7 +509,7 @@ export default function LandingPage() {
               </p>
               <div className="flex flex-col sm:flex-row items-center justify-center gap-4">
                 <Link href="/signup">
-                  <Button size="lg" className="bg-white text-violet-700 hover:bg-gray-100 px-8 shadow-xl">
+                  <Button size="lg" className="bg-white text-emerald-700 hover:bg-gray-100 px-8 shadow-xl">
                     Get Started for Free
                     <ChevronRight className="w-5 h-5 ml-2" />
                   </Button>
@@ -532,7 +532,7 @@ export default function LandingPage() {
             {/* Brand */}
             <div className="lg:col-span-2">
               <div className="flex items-center gap-2 mb-4">
-                <div className="w-9 h-9 rounded-xl bg-gradient-to-br from-violet-600 to-indigo-600 flex items-center justify-center shadow-lg">
+                <div className="w-9 h-9 rounded-xl bg-gradient-to-br from-emerald-600 to-teal-600 flex items-center justify-center shadow-lg">
                   <Sparkles className="w-5 h-5 text-white" />
                 </div>
                 <span className="font-bold text-lg">WebCraft AI</span>

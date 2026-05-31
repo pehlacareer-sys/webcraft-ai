@@ -199,7 +199,7 @@ export default function BuilderPage() {
             </Link>
             <div className="h-6 w-px bg-gray-700" />
             <div className="flex items-center gap-2">
-              <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-violet-600 to-indigo-600 flex items-center justify-center">
+              <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-emerald-600 to-teal-600 flex items-center justify-center">
                 <Sparkles className="w-4 h-4 text-white" />
               </div>
               <div>
@@ -308,7 +308,7 @@ export default function BuilderPage() {
               </>
             )}
             
-            <Button size="sm" className="bg-gradient-to-r from-violet-600 to-indigo-600 hover:from-violet-700 hover:to-indigo-700 shadow-lg shadow-violet-500/25">
+            <Button size="sm" className="bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-700 hover:to-teal-700 shadow-lg shadow-emerald-500/25">
               <Save className="w-4 h-4 mr-2" />
               Save
             </Button>
@@ -348,8 +348,8 @@ export default function BuilderPage() {
                       <div className="space-y-4">
                         {messages.length === 0 && (
                           <div className="text-center py-12">
-                            <div className="w-16 h-16 mx-auto mb-4 rounded-2xl bg-gradient-to-br from-violet-500/20 to-indigo-500/20 flex items-center justify-center">
-                              <Wand2 className="w-8 h-8 text-violet-400" />
+                            <div className="w-16 h-16 mx-auto mb-4 rounded-2xl bg-gradient-to-br from-emerald-500/20 to-teal-500/20 flex items-center justify-center">
+                              <Wand2 className="w-8 h-8 text-emerald-400" />
                             </div>
                             <h3 className="text-white font-medium mb-2">Start Building</h3>
                             <p className="text-sm text-gray-500">Describe the website you want to build</p>
@@ -364,7 +364,7 @@ export default function BuilderPage() {
                             animate={{ opacity: 1, y: 0 }}
                             className={`p-3 rounded-xl ${
                               msg.role === 'user'
-                                ? 'bg-violet-500/20 ml-4 border border-violet-500/30'
+                                ? 'bg-emerald-500/20 ml-4 border border-emerald-500/30'
                                 : msg.role === 'system'
                                 ? 'bg-yellow-500/10 border border-yellow-500/30 text-yellow-200'
                                 : 'bg-gray-800 mr-4 border border-gray-700'
@@ -372,7 +372,7 @@ export default function BuilderPage() {
                           >
                             <div className="flex items-start gap-2">
                               {msg.role === 'user' ? (
-                                <div className="w-6 h-6 rounded-full bg-violet-500 flex items-center justify-center shrink-0 mt-0.5">
+                                <div className="w-6 h-6 rounded-full bg-emerald-500 flex items-center justify-center shrink-0 mt-0.5">
                                   <span className="text-xs text-white">U</span>
                                 </div>
                               ) : msg.role === 'system' ? (
@@ -380,7 +380,7 @@ export default function BuilderPage() {
                                   <AlertCircle className="w-3 h-3 text-white" />
                                 </div>
                               ) : (
-                                <div className="w-6 h-6 rounded-full bg-gradient-to-br from-violet-500 to-indigo-500 flex items-center justify-center shrink-0 mt-0.5">
+                                <div className="w-6 h-6 rounded-full bg-gradient-to-br from-emerald-500 to-teal-500 flex items-center justify-center shrink-0 mt-0.5">
                                   <Sparkles className="w-3 h-3 text-white" />
                                 </div>
                               )}
@@ -398,7 +398,7 @@ export default function BuilderPage() {
                             animate={{ opacity: 1 }}
                             className="flex items-center gap-2 p-3 bg-gray-800 rounded-xl border border-gray-700"
                           >
-                            <Loader2 className="w-4 h-4 animate-spin text-violet-400" />
+                            <Loader2 className="w-4 h-4 animate-spin text-emerald-400" />
                             <span className="text-sm text-gray-400">Generating your website...</span>
                           </motion.div>
                         )}
@@ -416,14 +416,14 @@ export default function BuilderPage() {
                           onChange={(e) => setPrompt(e.target.value)}
                           onKeyDown={handleKeyDown}
                           placeholder="Describe changes or new features..."
-                          className="min-h-[80px] resize-none bg-gray-800 border-gray-700 focus:border-violet-500 focus:ring-violet-500/20 text-white placeholder:text-gray-500 pr-12"
+                          className="min-h-[80px] resize-none bg-gray-800 border-gray-700 focus:border-emerald-500 focus:ring-emerald-500/20 text-white placeholder:text-gray-500 pr-12"
                           disabled={isLoading}
                         />
                         <Button 
                           size="sm"
                           onClick={handleGenerate}
                           disabled={!prompt.trim() || isLoading}
-                          className="absolute bottom-3 right-3 bg-gradient-to-r from-violet-600 to-indigo-600 hover:from-violet-700 hover:to-indigo-700"
+                          className="absolute bottom-3 right-3 bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-700 hover:to-teal-700"
                         >
                           {isLoading ? (
                             <Loader2 className="w-4 h-4 animate-spin" />
@@ -556,8 +556,8 @@ export default function BuilderPage() {
                     ) : (
                       <div className="h-full min-h-[600px] flex items-center justify-center bg-gradient-to-br from-gray-50 to-gray-100">
                         <div className="text-center">
-                          <div className="w-16 h-16 mx-auto mb-4 rounded-2xl bg-gradient-to-br from-violet-100 to-indigo-100 flex items-center justify-center">
-                            <Eye className="w-8 h-8 text-violet-400" />
+                          <div className="w-16 h-16 mx-auto mb-4 rounded-2xl bg-gradient-to-br from-emerald-100 to-teal-100 flex items-center justify-center">
+                            <Eye className="w-8 h-8 text-emerald-400" />
                           </div>
                           <h3 className="text-gray-900 font-medium mb-1">Preview</h3>
                           <p className="text-sm text-gray-500">Your website will appear here</p>

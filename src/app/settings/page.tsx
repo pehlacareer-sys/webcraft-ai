@@ -58,7 +58,7 @@ export default function SettingsPage() {
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex items-center justify-between h-16">
             <Link href="/" className="flex items-center gap-2 group">
-              <div className="w-9 h-9 rounded-xl bg-gradient-to-br from-violet-600 to-indigo-600 flex items-center justify-center shadow-lg shadow-violet-500/25 group-hover:shadow-violet-500/40 transition-shadow">
+              <div className="w-9 h-9 rounded-xl bg-gradient-to-br from-emerald-600 to-teal-600 flex items-center justify-center shadow-lg shadow-emerald-500/25 group-hover:shadow-emerald-500/40 transition-shadow">
                 <Sparkles className="w-5 h-5 text-white" />
               </div>
               <span className="font-bold text-lg text-gray-900">WebCraft AI</span>
@@ -105,23 +105,23 @@ export default function SettingsPage() {
             transition={{ delay: 0.1 }}
           >
             <TabsList className="bg-white border border-gray-200 p-1 rounded-xl">
-              <TabsTrigger value="profile" className="rounded-lg data-[state=active]:bg-violet-100 data-[state=active]:text-violet-700">
+              <TabsTrigger value="profile" className="rounded-lg data-[state=active]:bg-emerald-100 data-[state=active]:text-emerald-700">
                 <User className="w-4 h-4 mr-2" />
                 Profile
               </TabsTrigger>
-              <TabsTrigger value="account" className="rounded-lg data-[state=active]:bg-violet-100 data-[state=active]:text-violet-700">
+              <TabsTrigger value="account" className="rounded-lg data-[state=active]:bg-emerald-100 data-[state=active]:text-emerald-700">
                 <SettingsIcon className="w-4 h-4 mr-2" />
                 Account
               </TabsTrigger>
-              <TabsTrigger value="notifications" className="rounded-lg data-[state=active]:bg-violet-100 data-[state=active]:text-violet-700">
+              <TabsTrigger value="notifications" className="rounded-lg data-[state=active]:bg-emerald-100 data-[state=active]:text-emerald-700">
                 <Bell className="w-4 h-4 mr-2" />
                 Notifications
               </TabsTrigger>
-              <TabsTrigger value="security" className="rounded-lg data-[state=active]:bg-violet-100 data-[state=active]:text-violet-700">
+              <TabsTrigger value="security" className="rounded-lg data-[state=active]:bg-emerald-100 data-[state=active]:text-emerald-700">
                 <Shield className="w-4 h-4 mr-2" />
                 Security
               </TabsTrigger>
-              <TabsTrigger value="billing" className="rounded-lg data-[state=active]:bg-violet-100 data-[state=active]:text-violet-700">
+              <TabsTrigger value="billing" className="rounded-lg data-[state=active]:bg-emerald-100 data-[state=active]:text-emerald-700">
                 <CreditCard className="w-4 h-4 mr-2" />
                 Billing
               </TabsTrigger>
@@ -147,16 +147,16 @@ export default function SettingsPage() {
                     <div className="relative">
                       <Avatar className="w-20 h-20 border-4 border-white shadow-lg">
                         <AvatarImage src="https://api.dicebear.com/7.x/avataaars/svg?seed=john" />
-                        <AvatarFallback className="text-2xl bg-gradient-to-br from-violet-500 to-indigo-600 text-white">JD</AvatarFallback>
+                        <AvatarFallback className="text-2xl bg-gradient-to-br from-emerald-500 to-teal-600 text-white">JD</AvatarFallback>
                       </Avatar>
-                      <button className="absolute bottom-0 right-0 w-7 h-7 rounded-full bg-violet-600 text-white flex items-center justify-center shadow-lg hover:bg-violet-700 transition-colors">
+                      <button className="absolute bottom-0 right-0 w-7 h-7 rounded-full bg-emerald-600 text-white flex items-center justify-center shadow-lg hover:bg-emerald-700 transition-colors">
                         <Camera className="w-3.5 h-3.5" />
                       </button>
                     </div>
                     <div>
                       <h3 className="font-semibold text-gray-900">John Doe</h3>
                       <p className="text-sm text-gray-500">john@example.com</p>
-                      <Badge variant="secondary" className="mt-2 bg-violet-100 text-violet-700">
+                      <Badge variant="secondary" className="mt-2 bg-emerald-100 text-emerald-700">
                         <Crown className="w-3 h-3 mr-1" />
                         Pro Plan
                       </Badge>
@@ -195,7 +195,7 @@ export default function SettingsPage() {
 
                   <div className="flex justify-end gap-3">
                     <Button variant="outline">Cancel</Button>
-                    <Button className="bg-gradient-to-r from-violet-600 to-indigo-600 hover:from-violet-700 hover:to-indigo-700">
+                    <Button className="bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-700 hover:to-teal-700">
                       <Check className="w-4 h-4 mr-2" />
                       Save Changes
                     </Button>
@@ -337,8 +337,8 @@ export default function SettingsPage() {
                   <div className="space-y-4">
                     <div className="flex items-center justify-between p-4 bg-gray-50 rounded-xl">
                       <div className="flex items-center gap-3">
-                        <div className="w-10 h-10 rounded-lg bg-violet-100 flex items-center justify-center">
-                          <Mail className="w-5 h-5 text-violet-600" />
+                        <div className="w-10 h-10 rounded-lg bg-emerald-100 flex items-center justify-center">
+                          <Mail className="w-5 h-5 text-emerald-600" />
                         </div>
                         <div>
                           <p className="font-medium text-gray-900">Email Notifications</p>
@@ -437,7 +437,7 @@ export default function SettingsPage() {
                         <Label htmlFor="confirmPassword">Confirm New Password</Label>
                         <Input id="confirmPassword" type="password" className="bg-gray-50 border-gray-200" />
                       </div>
-                      <Button className="bg-gradient-to-r from-violet-600 to-indigo-600">
+                      <Button className="bg-gradient-to-r from-emerald-600 to-teal-600">
                         <Lock className="w-4 h-4 mr-2" />
                         Update Password
                       </Button>
@@ -471,8 +471,8 @@ export default function SettingsPage() {
                     <div className="space-y-3">
                       <div className="flex items-center justify-between p-4 bg-gray-50 rounded-xl">
                         <div className="flex items-center gap-3">
-                          <div className="w-10 h-10 rounded-lg bg-violet-100 flex items-center justify-center">
-                            <Smartphone className="w-5 h-5 text-violet-600" />
+                          <div className="w-10 h-10 rounded-lg bg-emerald-100 flex items-center justify-center">
+                            <Smartphone className="w-5 h-5 text-emerald-600" />
                           </div>
                           <div>
                             <p className="font-medium text-gray-900">Current Session</p>
@@ -496,7 +496,7 @@ export default function SettingsPage() {
               className="space-y-6"
             >
               {/* Current Plan */}
-              <Card className="border-0 shadow-lg bg-gradient-to-br from-violet-600 to-indigo-700 text-white">
+              <Card className="border-0 shadow-lg bg-gradient-to-br from-emerald-600 to-teal-700 text-white">
                 <CardContent className="pt-6">
                   <div className="flex items-center justify-between">
                     <div>
@@ -508,7 +508,7 @@ export default function SettingsPage() {
                       <Button variant="outline" className="border-white/30 text-white hover:bg-white/10">
                         Change Plan
                       </Button>
-                      <Button className="bg-white text-violet-700 hover:bg-gray-100">
+                      <Button className="bg-white text-emerald-700 hover:bg-gray-100">
                         <Crown className="w-4 h-4 mr-2" />
                         Upgrade
                       </Button>
@@ -565,7 +565,7 @@ export default function SettingsPage() {
                         <div className="flex items-center gap-4">
                           <Badge className="bg-green-100 text-green-700 border-0">{invoice.status}</Badge>
                           <span className="font-medium text-gray-900">{invoice.amount}</span>
-                          <Button variant="ghost" size="sm" className="text-violet-600">
+                          <Button variant="ghost" size="sm" className="text-emerald-600">
                             <Download className="w-4 h-4" />
                           </Button>
                         </div>

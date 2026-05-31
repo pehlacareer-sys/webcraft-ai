@@ -7,7 +7,7 @@ import { Label } from '@/components/ui/label';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Separator } from '@/components/ui/separator';
 import { Checkbox } from '@/components/ui/checkbox';
-import { Github, Mail, Loader2, Sparkles } from 'lucide-react';
+import { Github, Mail, Loader2, Sparkles, AlertCircle, CheckCircle } from 'lucide-react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 
@@ -18,6 +18,8 @@ export default function SignupPage() {
   const [acceptTerms, setAcceptTerms] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState('');
+  const [success, setSuccess] = useState('');
+  const [requiresEmailConfirmation, setRequiresEmailConfirmation] = useState(false);
   const router = useRouter();
 
   const handleEmailSignup = async (e: React.FormEvent) => {
@@ -30,32 +32,106 @@ export default function SignupPage() {
     
     setIsLoading(true);
     setError('');
+    setSuccess('');
 
     try {
-      // Simulate signup - in production, call Supabase auth
-      await new Promise(resolve => setTimeout(resolve, 1000));
-      
-      // For demo, redirect to dashboard
-      router.push('/dashboard');
+      const response = await fetch('/api/auth/signup', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email, password, fullName: name })
+      });
+
+      const data = await response.json();
+
+      if (!data.success) {
+        setError(data.error || 'Failed to create account');
+        return;
+      }
+
+      // Check if email confirmation is required
+      if (data.requiresEmailConfirmation) {
+        setRequiresEmailConfirmation(true);
+        setSuccess(data.message || 'Please check your email to confirm your account.');
+      } else {
+        // Redirect to dashboard on success
+        router.push('/dashboard');
+        router.refresh();
+      }
     } catch (err) {
-      setError('Failed to create account');
+      setError('An unexpected error occurred. Please try again.');
     } finally {
       setIsLoading(false);
     }
   };
 
-  const handleSocialSignup = async (provider: string) => {
+  const handleSocialSignup = async (provider: 'google' | 'github') => {
     setIsLoading(true);
-    
+    setError('');
+
     try {
-      await new Promise(resolve => setTimeout(resolve, 1000));
-      router.push('/dashboard');
+      const response = await fetch('/api/auth/oauth', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ provider })
+      });
+
+      const data = await response.json();
+
+      if (!data.success) {
+        setError(data.error || `Failed to sign up with ${provider}`);
+        setIsLoading(false);
+        return;
+      }
+
+      // Redirect to OAuth provider
+      if (data.url) {
+        window.location.href = data.url;
+      }
     } catch (err) {
-      setError(`Failed to sign up with ${provider}`);
-    } finally {
+      setError(`Failed to initiate ${provider} signup`);
       setIsLoading(false);
     }
   };
+
+  // Show success screen if email confirmation is required
+  if (requiresEmailConfirmation) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-gray-50 px-4">
+        <div className="w-full max-w-md">
+          <div className="text-center mb-8">
+            <Link href="/" className="inline-flex items-center gap-2 mb-4">
+              <div className="w-10 h-10 rounded-lg bg-gradient-to-br from-emerald-600 to-teal-600 flex items-center justify-center">
+                <Sparkles className="w-6 h-6 text-white" />
+              </div>
+              <span className="font-bold text-xl text-gray-900">WebCraft AI</span>
+            </Link>
+          </div>
+
+          <Card>
+            <CardContent className="pt-6 text-center">
+              <div className="w-16 h-16 mx-auto mb-4 rounded-full bg-emerald-100 flex items-center justify-center">
+                <Mail className="w-8 h-8 text-emerald-600" />
+              </div>
+              <h2 className="text-xl font-bold text-gray-900 mb-2">Check your email</h2>
+              <p className="text-gray-600 mb-4">
+                We&apos;ve sent a confirmation link to <strong>{email}</strong>
+              </p>
+              <p className="text-sm text-gray-500 mb-6">
+                Click the link in the email to verify your account and get started.
+              </p>
+              <Button 
+                variant="outline" 
+                className="w-full"
+                onClick={() => router.push('/login')}
+              >
+                Back to Sign In
+              </Button>
+            </CardContent>
+          </Card>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen flex items-center justify-center bg-gray-50 px-4 py-8">
@@ -63,7 +139,7 @@ export default function SignupPage() {
         {/* Logo */}
         <div className="text-center mb-8">
           <Link href="/" className="inline-flex items-center gap-2 mb-4">
-            <div className="w-10 h-10 rounded-lg bg-gradient-to-br from-violet-600 to-indigo-600 flex items-center justify-center">
+            <div className="w-10 h-10 rounded-lg bg-gradient-to-br from-emerald-600 to-teal-600 flex items-center justify-center">
               <Sparkles className="w-6 h-6 text-white" />
             </div>
             <span className="font-bold text-xl text-gray-900">WebCraft AI</span>
@@ -75,16 +151,32 @@ export default function SignupPage() {
         <Card>
           <CardHeader>
             <CardTitle>Sign Up</CardTitle>
-            <CardDescription>It's free to get started</CardDescription>
+            <CardDescription>It&apos;s free to get started</CardDescription>
           </CardHeader>
           
           <CardContent className="space-y-4">
+            {/* Success Message */}
+            {success && (
+              <div className="flex items-center gap-2 p-3 bg-emerald-50 border border-emerald-200 rounded-lg text-emerald-700 text-sm">
+                <CheckCircle className="w-4 h-4 shrink-0" />
+                <span>{success}</span>
+              </div>
+            )}
+
+            {/* Error Message */}
+            {error && (
+              <div className="flex items-center gap-2 p-3 bg-red-50 border border-red-200 rounded-lg text-red-700 text-sm">
+                <AlertCircle className="w-4 h-4 shrink-0" />
+                <span>{error}</span>
+              </div>
+            )}
+
             {/* Social Signup */}
             <div className="grid gap-2">
               <Button 
                 variant="outline" 
                 className="w-full"
-                onClick={() => handleSocialSignup('Google')}
+                onClick={() => handleSocialSignup('google')}
                 disabled={isLoading}
               >
                 <svg className="w-5 h-5 mr-2" viewBox="0 0 24 24">
@@ -99,7 +191,7 @@ export default function SignupPage() {
               <Button 
                 variant="outline" 
                 className="w-full"
-                onClick={() => handleSocialSignup('GitHub')}
+                onClick={() => handleSocialSignup('github')}
                 disabled={isLoading}
               >
                 <Github className="w-5 h-5 mr-2" />
@@ -127,6 +219,7 @@ export default function SignupPage() {
                   value={name}
                   onChange={(e) => setName(e.target.value)}
                   required
+                  disabled={isLoading}
                 />
               </div>
 
@@ -139,6 +232,7 @@ export default function SignupPage() {
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
                   required
+                  disabled={isLoading}
                 />
               </div>
               
@@ -152,6 +246,7 @@ export default function SignupPage() {
                   onChange={(e) => setPassword(e.target.value)}
                   required
                   minLength={8}
+                  disabled={isLoading}
                 />
                 <p className="text-xs text-gray-500">Must be at least 8 characters</p>
               </div>
@@ -161,24 +256,21 @@ export default function SignupPage() {
                   id="terms" 
                   checked={acceptTerms}
                   onCheckedChange={(checked) => setAcceptTerms(checked as boolean)}
+                  disabled={isLoading}
                 />
                 <label htmlFor="terms" className="text-sm text-gray-600">
                   I agree to the{' '}
-                  <Link href="/terms" className="text-violet-600 hover:underline">
+                  <Link href="/terms" className="text-emerald-600 hover:underline">
                     Terms of Service
                   </Link>{' '}
                   and{' '}
-                  <Link href="/privacy" className="text-violet-600 hover:underline">
+                  <Link href="/privacy" className="text-emerald-600 hover:underline">
                     Privacy Policy
                   </Link>
                 </label>
               </div>
 
-              {error && (
-                <p className="text-sm text-red-600">{error}</p>
-              )}
-
-              <Button type="submit" className="w-full bg-violet-600 hover:bg-violet-700" disabled={isLoading}>
+              <Button type="submit" className="w-full bg-emerald-600 hover:bg-emerald-700" disabled={isLoading}>
                 {isLoading ? (
                   <>
                     <Loader2 className="w-4 h-4 mr-2 animate-spin" />
@@ -195,7 +287,7 @@ export default function SignupPage() {
 
             <p className="text-center text-sm text-gray-600">
               Already have an account?{' '}
-              <Link href="/login" className="text-violet-600 hover:underline font-medium">
+              <Link href="/login" className="text-emerald-600 hover:underline font-medium">
                 Sign in
               </Link>
             </p>

@@ -54,7 +54,7 @@ const templates = [
     uses: 1250,
     rating: 4.9,
     tags: ['Hero', 'Pricing', 'CTA'],
-    gradient: 'from-violet-500 to-purple-600'
+    gradient: 'from-emerald-500 to-teal-600'
   },
   {
     id: '2',
@@ -114,7 +114,7 @@ const templates = [
     uses: 380,
     rating: 4.8,
     tags: ['Charts', 'Metrics', 'Dark Mode'],
-    gradient: 'from-indigo-500 to-violet-500'
+    gradient: 'from-teal-500 to-emerald-500'
   },
   {
     id: '7',
@@ -194,16 +194,16 @@ export default function TemplatesPage() {
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex items-center justify-between h-16">
             <Link href="/" className="flex items-center gap-2 group">
-              <div className="w-9 h-9 rounded-xl bg-gradient-to-br from-violet-600 to-indigo-600 flex items-center justify-center shadow-lg shadow-violet-500/25 group-hover:shadow-violet-500/40 transition-shadow">
+              <div className="w-9 h-9 rounded-xl bg-gradient-to-br from-emerald-600 to-teal-600 flex items-center justify-center shadow-lg shadow-emerald-500/25 group-hover:shadow-emerald-500/40 transition-shadow">
                 <Sparkles className="w-5 h-5 text-white" />
               </div>
               <span className="font-bold text-lg text-gray-900">WebCraft AI</span>
             </Link>
 
             <nav className="hidden md:flex items-center gap-8">
-              <Link href="/templates" className="text-sm font-medium text-violet-600 relative">
+              <Link href="/templates" className="text-sm font-medium text-emerald-600 relative">
                 Templates
-                <span className="absolute -bottom-1 left-0 w-full h-0.5 bg-violet-600 rounded-full" />
+                <span className="absolute -bottom-1 left-0 w-full h-0.5 bg-emerald-600 rounded-full" />
               </Link>
               <Link href="/pricing" className="text-sm font-medium text-gray-600 hover:text-gray-900 transition-colors">
                 Pricing
@@ -232,7 +232,7 @@ export default function TemplatesPage() {
       {/* Main Content */}
       <main className="flex-1">
         {/* Hero Section */}
-        <section className="relative py-16 px-4 sm:px-6 lg:px-8 bg-gradient-to-b from-violet-50 to-white overflow-hidden">
+        <section className="relative py-16 px-4 sm:px-6 lg:px-8 bg-gradient-to-b from-emerald-50 to-white overflow-hidden">
           {/* Background Pattern */}
           <div className="absolute inset-0 bg-[url('data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNjAiIGhlaWdodD0iNjAiIHZpZXdCb3g9IjAgMCA2MCA2MCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48ZyBmaWxsPSJub25lIiBmaWxsLXJ1bGU9ImV2ZW5vZGQiPjxwYXRoIGQ9Ik0zNiAxOGMtOS45NDEgMC0xOCA4LjA1OS0xOCAxOHM4LjA1OSAxOCAxOCAxOGM5Ljk0MSAwIDE4LTguMDU5IDE4LTE4cy04LjA1OS0xOC0xOC0xOHptMCAzMmMtNy43MzIgMC0xNC02LjI2OC0xNC0xNHM2LjI2OC0xNCAxNC0xNHMxNCA2LjI2OCAxNCAxNC02LjI2OCAxNC0xNCAxNHoiIGZpbGw9IiNlNWU3ZWIiIGZpbGwtb3BhY2l0eT0iMC40Ii8+PC9nPjwvc3ZnPg==')] opacity-20" />
           
@@ -241,7 +241,7 @@ export default function TemplatesPage() {
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
             >
-              <Badge variant="secondary" className="mb-4 px-4 py-1 bg-violet-50 text-violet-700 border-violet-200">
+              <Badge variant="secondary" className="mb-4 px-4 py-1 bg-emerald-50 text-emerald-700 border-emerald-200">
                 <Crown className="w-4 h-4 mr-2" />
                 50+ Premium Templates
               </Badge>
@@ -334,7 +334,7 @@ export default function TemplatesPage() {
                   whileHover={{ y: -4 }}
                   className="group"
                 >
-                  <Card className="overflow-hidden border border-gray-200 hover:border-violet-200 hover:shadow-xl transition-all duration-300">
+                  <Card className="overflow-hidden border border-gray-200 hover:border-emerald-200 hover:shadow-xl transition-all duration-300">
                     {/* Preview Image */}
                     <div className={`h-48 bg-gradient-to-br ${template.gradient} relative overflow-hidden`}>
                       {/* Simulated Content */}
@@ -347,7 +347,7 @@ export default function TemplatesPage() {
                           <div className="h-2 w-1/2 bg-gray-100 rounded" />
                         </div>
                         <div className="mt-4 flex gap-2">
-                          <div className="h-6 w-16 bg-violet-100 rounded" />
+                          <div className="h-6 w-16 bg-emerald-100 rounded" />
                           <div className="h-6 w-16 bg-gray-100 rounded" />
                         </div>
                       </div>
@@ -359,7 +359,7 @@ export default function TemplatesPage() {
                           Preview
                         </Button>
                         <Link href={`/builder?template=${template.id}`}>
-                          <Button size="sm" className="bg-gradient-to-r from-violet-600 to-indigo-600 hover:from-violet-700 hover:to-indigo-700 shadow-lg">
+                          <Button size="sm" className="bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-700 hover:to-teal-700 shadow-lg">
                             Use Template
                           </Button>
                         </Link>
@@ -446,7 +446,7 @@ export default function TemplatesPage() {
         </section>
 
         {/* CTA Section */}
-        <section className="py-20 px-4 sm:px-6 lg:px-8 bg-gradient-to-br from-violet-600 to-indigo-700 relative overflow-hidden">
+        <section className="py-20 px-4 sm:px-6 lg:px-8 bg-gradient-to-br from-emerald-600 to-teal-700 relative overflow-hidden">
           <div className="absolute inset-0 bg-[url('data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNjAiIGhlaWdodD0iNjAiIHZpZXdCb3g9IjAgMCA2MCA2MCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48ZyBmaWxsPSJub25lIiBmaWxsLXJ1bGU9ImV2ZW5vZGQiPjxwYXRoIGQ9Ik0zNiAxOGMtOS45NDEgMC0xOCA4LjA1OS0xOCAxOHM4LjA1OSAxOCAxOCAxOGM5Ljk0MSAwIDE4LTguMDU5IDE4LTE4cy04LjA1OS0xOC0xOC0xOHptMCAzMmMtNy43MzIgMC0xNC02LjI2OC0xNC0xNHM2LjI2OC0xNCAxNC0xNHMxNCA2LjI2OCAxNCAxNC02LjI2OCAxNC0xNCAxNHoiIGZpbGw9IiNmZmYiIGZpbGwtb3BhY2l0eT0iMC4xIi8+PC9nPjwvc3ZnPg==')] opacity-10" />
           
           <div className="max-w-4xl mx-auto text-center relative z-10">
@@ -463,7 +463,7 @@ export default function TemplatesPage() {
                 Get a custom design tailored to your exact needs.
               </p>
               <Link href="/builder">
-                <Button size="lg" className="bg-white text-violet-700 hover:bg-gray-100 px-8 shadow-xl">
+                <Button size="lg" className="bg-white text-emerald-700 hover:bg-gray-100 px-8 shadow-xl">
                   <Sparkles className="w-5 h-5 mr-2" />
                   Create Custom Website
                   <ArrowRight className="w-5 h-5 ml-2" />
@@ -480,7 +480,7 @@ export default function TemplatesPage() {
           <div className="grid sm:grid-cols-4 gap-8">
             <div className="sm:col-span-1">
               <div className="flex items-center gap-2 mb-4">
-                <div className="w-9 h-9 rounded-xl bg-gradient-to-br from-violet-600 to-indigo-600 flex items-center justify-center shadow-lg">
+                <div className="w-9 h-9 rounded-xl bg-gradient-to-br from-emerald-600 to-teal-600 flex items-center justify-center shadow-lg">
                   <Sparkles className="w-5 h-5 text-white" />
                 </div>
                 <span className="font-bold text-lg">WebCraft AI</span>

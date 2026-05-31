@@ -327,7 +327,7 @@ function generateLandingPage(prompt: string): string {
     <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
       <div class="flex items-center justify-between h-16">
         <div class="flex items-center gap-2">
-          <div class="w-8 h-8 rounded-lg bg-gradient-to-br from-violet-600 to-indigo-600"></div>
+          <div class="w-8 h-8 rounded-lg bg-gradient-to-br from-emerald-600 to-teal-600"></div>
           <span class="font-semibold text-lg text-gray-900">Brand</span>
         </div>
         <div class="hidden md:flex items-center gap-8">
@@ -345,7 +345,7 @@ function generateLandingPage(prompt: string): string {
     <div class="max-w-4xl mx-auto text-center">
       <h1 class="text-5xl font-bold text-gray-900 mb-6">
         Build something amazing
-        <span class="bg-gradient-to-r from-violet-600 to-indigo-600 bg-clip-text text-transparent">today</span>
+        <span class="bg-gradient-to-r from-emerald-600 to-teal-600 bg-clip-text text-transparent">today</span>
       </h1>
       <p class="text-xl text-gray-600 mb-8">
         The modern platform for building beautiful, responsive websites with ease.
@@ -367,17 +367,17 @@ function generateLandingPage(prompt: string): string {
       <h2 class="text-3xl font-bold text-center text-gray-900 mb-12">Features</h2>
       <div class="grid md:grid-cols-3 gap-8">
         <div class="bg-white p-6 rounded-xl shadow-sm">
-          <div class="w-12 h-12 bg-violet-100 rounded-lg mb-4"></div>
+          <div class="w-12 h-12 bg-emerald-100 rounded-lg mb-4"></div>
           <h3 class="text-lg font-semibold text-gray-900 mb-2">Lightning Fast</h3>
           <p class="text-gray-600">Optimized for speed and performance.</p>
         </div>
         <div class="bg-white p-6 rounded-xl shadow-sm">
-          <div class="w-12 h-12 bg-violet-100 rounded-lg mb-4"></div>
+          <div class="w-12 h-12 bg-emerald-100 rounded-lg mb-4"></div>
           <h3 class="text-lg font-semibold text-gray-900 mb-2">Fully Responsive</h3>
           <p class="text-gray-600">Looks great on all devices.</p>
         </div>
         <div class="bg-white p-6 rounded-xl shadow-sm">
-          <div class="w-12 h-12 bg-violet-100 rounded-lg mb-4"></div>
+          <div class="w-12 h-12 bg-emerald-100 rounded-lg mb-4"></div>
           <h3 class="text-lg font-semibold text-gray-900 mb-2">Easy to Use</h3>
           <p class="text-gray-600">Simple and intuitive interface.</p>
         </div>
@@ -390,7 +390,7 @@ function generateLandingPage(prompt: string): string {
     <div class="max-w-4xl mx-auto text-center">
       <h2 class="text-3xl font-bold text-gray-900 mb-4">Ready to get started?</h2>
       <p class="text-gray-600 mb-8">Join thousands of users building with our platform.</p>
-      <button class="px-8 py-3 bg-gradient-to-r from-violet-600 to-indigo-600 text-white rounded-lg hover:opacity-90">
+      <button class="px-8 py-3 bg-gradient-to-r from-emerald-600 to-teal-600 text-white rounded-lg hover:opacity-90">
         Start Building Now
       </button>
     </div>
@@ -434,7 +434,7 @@ function generatePortfolioPage(prompt: string): string {
       <h2 class="text-3xl font-bold text-gray-900 mb-12">Projects</h2>
       <div class="grid md:grid-cols-2 gap-8">
         <div class="bg-white rounded-xl overflow-hidden shadow-sm">
-          <div class="h-48 bg-gradient-to-br from-violet-500 to-indigo-500"></div>
+          <div class="h-48 bg-gradient-to-br from-emerald-500 to-teal-500"></div>
           <div class="p-6">
             <h3 class="text-lg font-semibold text-gray-900">Project One</h3>
             <p class="text-gray-600">A modern web application</p>
@@ -479,12 +479,12 @@ function generatePricingPage(prompt: string): string {
         </div>
         
         <!-- Pro -->
-        <div class="border-2 border-violet-500 rounded-xl p-8 relative">
-          <span class="absolute -top-3 left-1/2 -translate-x-1/2 bg-violet-500 text-white text-sm px-3 py-1 rounded-full">Popular</span>
+        <div class="border-2 border-emerald-500 rounded-xl p-8 relative">
+          <span class="absolute -top-3 left-1/2 -translate-x-1/2 bg-emerald-500 text-white text-sm px-3 py-1 rounded-full">Popular</span>
           <h3 class="text-lg font-semibold text-gray-900">Pro</h3>
           <p class="text-4xl font-bold text-gray-900 my-4">$29</p>
           <p class="text-gray-600 mb-6">Best for professionals</p>
-          <button class="w-full py-2 bg-violet-500 text-white rounded-lg">Get Started</button>
+          <button class="w-full py-2 bg-emerald-500 text-white rounded-lg">Get Started</button>
         </div>
         
         <!-- Enterprise -->
@@ -517,17 +517,17 @@ function generateBlogPage(prompt: string): string {
       
       <div class="space-y-8">
         <article class="border-b border-gray-100 pb-8">
-          <span class="text-violet-600 text-sm font-medium">Technology</span>
+          <span class="text-emerald-600 text-sm font-medium">Technology</span>
           <h3 class="text-2xl font-bold text-gray-900 mt-2 mb-3">Getting Started with Modern Web Development</h3>
           <p class="text-gray-600 mb-4">Learn the fundamentals of building modern websites with the latest tools and technologies...</p>
-          <a href="#" class="text-violet-600 font-medium">Read more →</a>
+          <a href="#" class="text-emerald-600 font-medium">Read more →</a>
         </article>
         
         <article class="border-b border-gray-100 pb-8">
           <span class="text-emerald-600 text-sm font-medium">Design</span>
           <h3 class="text-2xl font-bold text-gray-900 mt-2 mb-3">Design Principles for Better User Experience</h3>
           <p class="text-gray-600 mb-4">Understanding the core principles that make websites more usable and engaging...</p>
-          <a href="#" class="text-violet-600 font-medium">Read more →</a>
+          <a href="#" class="text-emerald-600 font-medium">Read more →</a>
         </article>
       </div>
     </div>

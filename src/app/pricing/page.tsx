@@ -53,7 +53,7 @@ const plans = [
     ],
     cta: 'Start Free Trial',
     popular: true,
-    gradient: 'from-violet-600 to-indigo-600'
+    gradient: 'from-emerald-600 to-teal-600'
   },
   {
     name: 'Enterprise',
@@ -103,7 +103,7 @@ export default function PricingPage() {
         <nav className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex items-center justify-between h-16">
             <Link href="/" className="flex items-center gap-2 group">
-              <div className="w-9 h-9 rounded-xl bg-gradient-to-br from-violet-600 to-indigo-600 flex items-center justify-center shadow-lg shadow-violet-500/25 group-hover:shadow-violet-500/40 transition-shadow">
+              <div className="w-9 h-9 rounded-xl bg-gradient-to-br from-emerald-600 to-teal-600 flex items-center justify-center shadow-lg shadow-emerald-500/25 group-hover:shadow-emerald-500/40 transition-shadow">
                 <Sparkles className="w-5 h-5 text-white" />
               </div>
               <span className="font-bold text-lg text-gray-900">WebCraft AI</span>
@@ -113,9 +113,9 @@ export default function PricingPage() {
               <Link href="/templates" className="text-sm font-medium text-gray-600 hover:text-gray-900 transition-colors">
                 Templates
               </Link>
-              <Link href="/pricing" className="text-sm font-medium text-violet-600 relative">
+              <Link href="/pricing" className="text-sm font-medium text-emerald-600 relative">
                 Pricing
-                <span className="absolute -bottom-1 left-0 w-full h-0.5 bg-violet-600 rounded-full" />
+                <span className="absolute -bottom-1 left-0 w-full h-0.5 bg-emerald-600 rounded-full" />
               </Link>
               <Link href="/docs" className="text-sm font-medium text-gray-600 hover:text-gray-900 transition-colors">
                 Docs
@@ -141,13 +141,13 @@ export default function PricingPage() {
       {/* Main Content */}
       <main className="flex-1 pt-16">
         {/* Hero Section */}
-        <section className="py-20 px-4 sm:px-6 lg:px-8 bg-gradient-to-b from-violet-50 to-white">
+        <section className="py-20 px-4 sm:px-6 lg:px-8 bg-gradient-to-b from-emerald-50 to-white">
           <div className="max-w-4xl mx-auto text-center">
             <motion.div
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
             >
-              <Badge variant="secondary" className="mb-4 px-4 py-1 bg-violet-50 text-violet-700 border-violet-200">
+              <Badge variant="secondary" className="mb-4 px-4 py-1 bg-emerald-50 text-emerald-700 border-emerald-200">
                 Pricing
               </Badge>
               <h1 className="text-4xl sm:text-5xl font-bold text-gray-900 mb-4">
@@ -171,7 +171,7 @@ export default function PricingPage() {
               <Switch
                 checked={isYearly}
                 onCheckedChange={setIsYearly}
-                className="data-[state=checked]:bg-violet-600"
+                className="data-[state=checked]:bg-emerald-600"
               />
               <span className={`text-sm ${isYearly ? 'text-gray-900 font-medium' : 'text-gray-500'}`}>
                 Yearly
@@ -194,10 +194,10 @@ export default function PricingPage() {
                   animate={{ opacity: 1, y: 0 }}
                   transition={{ delay: 0.2 + index * 0.1 }}
                 >
-                  <Card className={`relative h-full ${plan.popular ? 'border-2 border-violet-500 shadow-xl shadow-violet-500/10' : 'border border-gray-200'}`}>
+                  <Card className={`relative h-full ${plan.popular ? 'border-2 border-emerald-500 shadow-xl shadow-emerald-500/10' : 'border border-gray-200'}`}>
                     {plan.popular && (
                       <div className="absolute -top-3 left-1/2 -translate-x-1/2">
-                        <Badge className="bg-gradient-to-r from-violet-600 to-indigo-600 text-white border-0">
+                        <Badge className="bg-gradient-to-r from-emerald-600 to-teal-600 text-white border-0">
                           Most Popular
                         </Badge>
                       </div>
@@ -241,7 +241,7 @@ export default function PricingPage() {
                       </ul>
                       
                       <Button
-                        className={`w-full ${plan.popular ? 'bg-gradient-to-r from-violet-600 to-indigo-600 hover:from-violet-700 hover:to-indigo-700 shadow-lg shadow-violet-500/25' : 'bg-gray-900 hover:bg-gray-800'}`}
+                        className={`w-full ${plan.popular ? 'bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-700 hover:to-teal-700 shadow-lg shadow-emerald-500/25' : 'bg-gray-900 hover:bg-gray-800'}`}
                         size="lg"
                       >
                         {plan.cta}
@@ -278,8 +278,8 @@ export default function PricingPage() {
                   transition={{ delay: index * 0.1 }}
                   className="bg-white p-6 rounded-xl shadow-sm border border-gray-100"
                 >
-                  <div className="w-12 h-12 rounded-xl bg-violet-100 flex items-center justify-center mb-4">
-                    <feature.icon className="w-6 h-6 text-violet-600" />
+                  <div className="w-12 h-12 rounded-xl bg-emerald-100 flex items-center justify-center mb-4">
+                    <feature.icon className="w-6 h-6 text-emerald-600" />
                   </div>
                   <h3 className="font-semibold text-gray-900 mb-2">{feature.title}</h3>
                   <p className="text-sm text-gray-600">{feature.description}</p>
@@ -316,7 +316,7 @@ export default function PricingPage() {
         </section>
 
         {/* CTA Section */}
-        <section className="py-20 px-4 sm:px-6 lg:px-8 bg-gradient-to-br from-violet-600 to-indigo-700">
+        <section className="py-20 px-4 sm:px-6 lg:px-8 bg-gradient-to-br from-emerald-600 to-teal-700">
           <div className="max-w-4xl mx-auto text-center">
             <h2 className="text-3xl sm:text-4xl font-bold text-white mb-4">
               Ready to start building?
@@ -325,7 +325,7 @@ export default function PricingPage() {
               Join thousands of developers building with AI. Start for free today.
             </p>
             <Link href="/signup">
-              <Button size="lg" className="bg-white text-violet-700 hover:bg-gray-100 px-8 shadow-xl">
+              <Button size="lg" className="bg-white text-emerald-700 hover:bg-gray-100 px-8 shadow-xl">
                 Get Started Free
                 <ArrowRight className="w-5 h-5 ml-2" />
               </Button>

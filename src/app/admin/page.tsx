@@ -53,9 +53,15 @@ import {
   Zap,
   ExternalLink,
   RefreshCw,
-  AlertCircle
+  AlertCircle,
+  Loader2,
+  Shield,
+  LogOut,
+  Lock
 } from 'lucide-react';
 import Link from 'next/link';
+import { useRouter } from 'next/navigation';
+import { useAuth } from '@/hooks/useAuth';
 
 interface APIKeyData {
   id: string;
@@ -84,7 +90,7 @@ interface Stats {
 export default function AdminPage() {
   const [apiKeys, setApiKeys] = useState<APIKeyData[]>([]);
   const [stats, setStats] = useState<Stats | null>(null);
-  const [isLoading, setIsLoading] = useState(true);
+  const [isLoadingData, setIsLoadingData] = useState(true);
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [editingKey, setEditingKey] = useState<APIKeyData | null>(null);
   
@@ -94,9 +100,28 @@ export default function AdminPage() {
   const [apiKey, setApiKey] = useState('');
   const [dailyLimit, setDailyLimit] = useState('100');
 
+  const router = useRouter();
+  const { user, isLoading, isAuthenticated, isAdmin, signOut } = useAuth();
+
+  // Redirect if not authenticated or not admin
+  useEffect(() => {
+    if (!isLoading && !isAuthenticated) {
+      router.push('/login');
+    } else if (!isLoading && isAuthenticated && !isAdmin) {
+      router.push('/dashboard?error=access_denied');
+    }
+  }, [isLoading, isAuthenticated, isAdmin, router]);
+
+  // Fetch data only when authenticated as admin
+  useEffect(() => {
+    if (isAdmin) {
+      fetchData();
+    }
+  }, [isAdmin]);
+
   // Fetch data
   const fetchData = async () => {
-    setIsLoading(true);
+    setIsLoadingData(true);
     try {
       const [keysRes, statsRes] = await Promise.all([
         fetch('/api/admin/keys'),
@@ -111,13 +136,9 @@ export default function AdminPage() {
     } catch (error) {
       console.error('Failed to fetch data:', error);
     } finally {
-      setIsLoading(false);
+      setIsLoadingData(false);
     }
   };
-
-  useEffect(() => {
-    fetchData();
-  }, []);
 
   // Create or update API key
   const handleSaveKey = async () => {
@@ -201,14 +222,52 @@ export default function AdminPage() {
     setIsDialogOpen(true);
   };
 
-  const getProviderBadge = (provider: string) => {
+  const handleSignOut = async () => {
+    await signOut();
+  };
+
+  const getProviderBadge = (p: string) => {
     const colors = {
-      zai: 'bg-violet-100 text-violet-700',
+      zai: 'bg-emerald-100 text-emerald-700',
       openrouter: 'bg-blue-100 text-blue-700',
       groq: 'bg-emerald-100 text-emerald-700'
     };
-    return colors[provider as keyof typeof colors] || 'bg-gray-100 text-gray-700';
+    return colors[p as keyof typeof colors] || 'bg-gray-100 text-gray-700';
   };
+
+  // Show loading state while checking auth
+  if (isLoading) {
+    return (
+      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+        <div className="text-center">
+          <Loader2 className="w-8 h-8 animate-spin mx-auto text-emerald-600" />
+          <p className="mt-4 text-gray-600">Loading...</p>
+        </div>
+      </div>
+    );
+  }
+
+  // Show access denied message if not admin
+  if (!isAuthenticated || !isAdmin) {
+    return (
+      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+        <Card className="max-w-md">
+          <CardContent className="pt-6 text-center">
+            <div className="w-16 h-16 mx-auto mb-4 rounded-full bg-red-100 flex items-center justify-center">
+              <Lock className="w-8 h-8 text-red-600" />
+            </div>
+            <h2 className="text-xl font-bold text-gray-900 mb-2">Access Denied</h2>
+            <p className="text-gray-600 mb-4">
+              You don&apos;t have permission to access the admin panel.
+            </p>
+            <Button onClick={() => router.push('/dashboard')}>
+              Go to Dashboard
+            </Button>
+          </CardContent>
+        </Card>
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen bg-gray-50">
@@ -220,17 +279,45 @@ export default function AdminPage() {
               <Link href="/" className="text-gray-600 hover:text-gray-900">
                 ← Back to App
               </Link>
-              <h1 className="text-xl font-semibold text-gray-900">Admin Panel</h1>
+              <div className="flex items-center gap-2">
+                <Shield className="w-5 h-5 text-emerald-600" />
+                <h1 className="text-xl font-semibold text-gray-900">Admin Panel</h1>
+              </div>
             </div>
-            <Button variant="outline" size="sm" onClick={fetchData}>
-              <RefreshCw className="w-4 h-4 mr-2" />
-              Refresh
-            </Button>
+            <div className="flex items-center gap-3">
+              <Button variant="outline" size="sm" onClick={fetchData}>
+                <RefreshCw className="w-4 h-4 mr-2" />
+                Refresh
+              </Button>
+              <Button variant="ghost" size="sm" onClick={handleSignOut} className="text-red-600 hover:text-red-700 hover:bg-red-50">
+                <LogOut className="w-4 h-4 mr-2" />
+                Sign Out
+              </Button>
+            </div>
           </div>
         </div>
       </header>
 
       <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+        {/* Admin Info Banner */}
+        <Card className="mb-8 border-emerald-200 bg-emerald-50">
+          <CardContent className="pt-6">
+            <div className="flex items-center gap-3">
+              <div className="w-10 h-10 rounded-full bg-emerald-100 flex items-center justify-center">
+                <Shield className="w-5 h-5 text-emerald-600" />
+              </div>
+              <div>
+                <p className="font-medium text-emerald-900">
+                  Logged in as Administrator
+                </p>
+                <p className="text-sm text-emerald-700">
+                  {user?.email} • {user?.user_metadata?.full_name || 'Admin User'}
+                </p>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+
         {/* Stats Cards */}
         <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
           <Card>
@@ -283,11 +370,11 @@ export default function AdminPage() {
             </CardHeader>
             <CardContent>
               <div className="grid sm:grid-cols-3 gap-4">
-                {Object.entries(stats.providerStats).map(([provider, data]) => (
-                  <div key={provider} className="p-4 bg-gray-50 rounded-lg">
+                {Object.entries(stats.providerStats).map(([p, data]) => (
+                  <div key={p} className="p-4 bg-gray-50 rounded-lg">
                     <div className="flex items-center justify-between mb-2">
-                      <Badge className={getProviderBadge(provider)}>
-                        {provider.toUpperCase()}
+                      <Badge className={getProviderBadge(p)}>
+                        {p.toUpperCase()}
                       </Badge>
                       <span className="text-sm text-gray-500">
                         {data.active}/{data.total} active
@@ -313,7 +400,7 @@ export default function AdminPage() {
               
               <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
                 <DialogTrigger asChild>
-                  <Button onClick={resetForm}>
+                  <Button onClick={resetForm} className="bg-emerald-600 hover:bg-emerald-700">
                     <Plus className="w-4 h-4 mr-2" />
                     Add API Key
                   </Button>
@@ -384,7 +471,7 @@ export default function AdminPage() {
                     <Button variant="outline" onClick={() => setIsDialogOpen(false)}>
                       Cancel
                     </Button>
-                    <Button onClick={handleSaveKey}>
+                    <Button onClick={handleSaveKey} className="bg-emerald-600 hover:bg-emerald-700">
                       {editingKey ? 'Save Changes' : 'Add Key'}
                     </Button>
                   </DialogFooter>
@@ -394,8 +481,11 @@ export default function AdminPage() {
           </CardHeader>
           
           <CardContent>
-            {isLoading ? (
-              <div className="text-center py-8 text-gray-500">Loading...</div>
+            {isLoadingData ? (
+              <div className="text-center py-8 text-gray-500">
+                <Loader2 className="w-6 h-6 animate-spin mx-auto mb-2" />
+                Loading...
+              </div>
             ) : apiKeys.length === 0 ? (
               <div className="text-center py-8">
                 <Key className="w-12 h-12 mx-auto mb-4 text-gray-300" />
@@ -462,7 +552,7 @@ export default function AdminPage() {
                               <AlertDialogHeader>
                                 <AlertDialogTitle>Delete API Key</AlertDialogTitle>
                                 <AlertDialogDescription>
-                                  Are you sure you want to delete "{key.name}"? This action cannot be undone.
+                                  Are you sure you want to delete &quot;{key.name}&quot;? This action cannot be undone.
                                 </AlertDialogDescription>
                               </AlertDialogHeader>
                               <AlertDialogFooter>
@@ -487,7 +577,7 @@ export default function AdminPage() {
         </Card>
 
         {/* Setup Guide */}
-        {apiKeys.length === 0 && (
+        {apiKeys.length === 0 && !isLoadingData && (
           <Card className="mt-8 border-amber-200 bg-amber-50">
             <CardHeader>
               <div className="flex items-center gap-2">
@@ -505,7 +595,7 @@ export default function AdminPage() {
                     href="https://z.ai/manage-apikey/apikey-list" 
                     target="_blank" 
                     rel="noopener noreferrer"
-                    className="text-sm text-violet-600 hover:underline inline-flex items-center"
+                    className="text-sm text-emerald-600 hover:underline inline-flex items-center"
                   >
                     Get API Key <ExternalLink className="w-3 h-3 ml-1" />
                   </a>
@@ -517,7 +607,7 @@ export default function AdminPage() {
                     href="https://openrouter.ai/keys" 
                     target="_blank" 
                     rel="noopener noreferrer"
-                    className="text-sm text-violet-600 hover:underline inline-flex items-center"
+                    className="text-sm text-emerald-600 hover:underline inline-flex items-center"
                   >
                     Get API Key <ExternalLink className="w-3 h-3 ml-1" />
                   </a>
@@ -529,7 +619,7 @@ export default function AdminPage() {
                     href="https://console.groq.com/keys" 
                     target="_blank" 
                     rel="noopener noreferrer"
-                    className="text-sm text-violet-600 hover:underline inline-flex items-center"
+                    className="text-sm text-emerald-600 hover:underline inline-flex items-center"
                   >
                     Get API Key <ExternalLink className="w-3 h-3 ml-1" />
                   </a>
