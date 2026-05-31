@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, Suspense } from 'react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -10,7 +10,7 @@ import { Github, Mail, Loader2, Sparkles, AlertCircle, CheckCircle } from 'lucid
 import Link from 'next/link';
 import { useRouter, useSearchParams } from 'next/navigation';
 
-export default function LoginPage() {
+function LoginContent() {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [isLoading, setIsLoading] = useState(false);
@@ -76,7 +76,9 @@ export default function LoginPage() {
       const data = await response.json();
 
       if (!data.success) {
-        setError(data.error || `Failed to login with ${provider}`);
+        // Show detailed error message
+        const errorMsg = data.error || `Failed to login with ${provider}`;
+        setError(errorMsg);
         setIsLoading(false);
         return;
       }
@@ -86,7 +88,7 @@ export default function LoginPage() {
         window.location.href = data.url;
       }
     } catch (err) {
-      setError(`Failed to initiate ${provider} login`);
+      setError(`Failed to initiate ${provider} login. Please check your connection and try again.`);
       setIsLoading(false);
     }
   };
@@ -123,9 +125,16 @@ export default function LoginPage() {
 
             {/* Error Message */}
             {error && (
-              <div className="flex items-center gap-2 p-3 bg-red-50 border border-red-200 rounded-lg text-red-700 text-sm">
-                <AlertCircle className="w-4 h-4 shrink-0" />
-                <span>{error}</span>
+              <div className="flex items-start gap-2 p-3 bg-red-50 border border-red-200 rounded-lg text-red-700 text-sm">
+                <AlertCircle className="w-4 h-4 shrink-0 mt-0.5" />
+                <div className="flex-1">
+                  <span>{error}</span>
+                  {(error.includes('not enabled') || error.includes('not configured')) && (
+                    <p className="mt-2 text-xs text-red-600">
+                      Need help? Go to Supabase Dashboard → Authentication → Providers to enable {error.includes('Google') ? 'Google' : 'GitHub'} OAuth.
+                    </p>
+                  )}
+                </div>
               </div>
             )}
 
@@ -224,5 +233,33 @@ export default function LoginPage() {
         </Card>
       </div>
     </div>
+  );
+}
+
+function LoginFallback() {
+  return (
+    <div className="min-h-screen flex items-center justify-center bg-gray-50 px-4">
+      <div className="w-full max-w-md">
+        <div className="text-center mb-8">
+          <div className="inline-flex items-center gap-2 mb-4">
+            <div className="w-10 h-10 rounded-lg bg-gradient-to-br from-emerald-600 to-teal-600 flex items-center justify-center">
+              <Sparkles className="w-6 h-6 text-white" />
+            </div>
+            <span className="font-bold text-xl text-gray-900">WebCraft AI</span>
+          </div>
+          <div className="flex items-center justify-center">
+            <Loader2 className="w-6 h-6 animate-spin text-emerald-600" />
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+export default function LoginPage() {
+  return (
+    <Suspense fallback={<LoginFallback />}>
+      <LoginContent />
+    </Suspense>
   );
 }

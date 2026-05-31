@@ -24,9 +24,28 @@ export async function POST(request: Request) {
 
     if (error) {
       console.error('OAuth error:', error);
+      
+      // Provide more helpful error messages
+      let errorMessage = error.message;
+      
+      if (error.message.includes('not enabled') || error.message.includes('disabled')) {
+        errorMessage = `${provider.charAt(0).toUpperCase() + provider.slice(1)} login is not enabled. Please contact your administrator to enable it in Supabase Dashboard → Authentication → Providers.`;
+      } else if (error.message.includes('provider')) {
+        errorMessage = `${provider.charAt(0).toUpperCase() + provider.slice(1)} OAuth is not configured. Please check your Supabase settings.`;
+      } else if (error.message.includes('client_id') || error.message.includes('client secret')) {
+        errorMessage = `${provider.charAt(0).toUpperCase() + provider.slice(1)} OAuth credentials are missing. Please add your Client ID and Secret in Supabase Dashboard.`;
+      }
+      
       return NextResponse.json(
-        { success: false, error: error.message },
+        { success: false, error: errorMessage },
         { status: 400 }
+      );
+    }
+
+    if (!data.url) {
+      return NextResponse.json(
+        { success: false, error: 'Failed to get OAuth URL. Please try again.' },
+        { status: 500 }
       );
     }
 
@@ -37,7 +56,7 @@ export async function POST(request: Request) {
   } catch (error) {
     console.error('OAuth API error:', error);
     return NextResponse.json(
-      { success: false, error: 'An unexpected error occurred' },
+      { success: false, error: 'An unexpected error occurred. Please try again later.' },
       { status: 500 }
     );
   }

@@ -78,7 +78,9 @@ export default function SignupPage() {
       const data = await response.json();
 
       if (!data.success) {
-        setError(data.error || `Failed to sign up with ${provider}`);
+        // Show detailed error message
+        const errorMsg = data.error || `Failed to sign up with ${provider}`;
+        setError(errorMsg);
         setIsLoading(false);
         return;
       }
@@ -88,7 +90,7 @@ export default function SignupPage() {
         window.location.href = data.url;
       }
     } catch (err) {
-      setError(`Failed to initiate ${provider} signup`);
+      setError(`Failed to initiate ${provider} signup. Please check your connection and try again.`);
       setIsLoading(false);
     }
   };
@@ -165,9 +167,16 @@ export default function SignupPage() {
 
             {/* Error Message */}
             {error && (
-              <div className="flex items-center gap-2 p-3 bg-red-50 border border-red-200 rounded-lg text-red-700 text-sm">
-                <AlertCircle className="w-4 h-4 shrink-0" />
-                <span>{error}</span>
+              <div className="flex items-start gap-2 p-3 bg-red-50 border border-red-200 rounded-lg text-red-700 text-sm">
+                <AlertCircle className="w-4 h-4 shrink-0 mt-0.5" />
+                <div className="flex-1">
+                  <span>{error}</span>
+                  {(error.includes('not enabled') || error.includes('not configured')) && (
+                    <p className="mt-2 text-xs text-red-600">
+                      Need help? Go to Supabase Dashboard → Authentication → Providers to enable {error.includes('Google') ? 'Google' : 'GitHub'} OAuth.
+                    </p>
+                  )}
+                </div>
               </div>
             )}
 

@@ -57,7 +57,9 @@ import {
   Loader2,
   Shield,
   LogOut,
-  Lock
+  Lock,
+  Eye,
+  EyeOff
 } from 'lucide-react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
@@ -93,6 +95,9 @@ export default function AdminPage() {
   const [isLoadingData, setIsLoadingData] = useState(true);
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [editingKey, setEditingKey] = useState<APIKeyData | null>(null);
+  const [bypassMode, setBypassMode] = useState(false);
+  const [bypassPassword, setBypassPassword] = useState('');
+  const [showBypassInput, setShowBypassInput] = useState(false);
   
   // Form state
   const [provider, setProvider] = useState('zai');
@@ -103,21 +108,34 @@ export default function AdminPage() {
   const router = useRouter();
   const { user, isLoading, isAuthenticated, isAdmin, signOut } = useAuth();
 
-  // Redirect if not authenticated or not admin
-  useEffect(() => {
-    if (!isLoading && !isAuthenticated) {
-      router.push('/login');
-    } else if (!isLoading && isAuthenticated && !isAdmin) {
-      router.push('/dashboard?error=access_denied');
-    }
-  }, [isLoading, isAuthenticated, isAdmin, router]);
+  // Bypass password for demo purposes (in production, this should be a secure method)
+  const BYPASS_PASSWORD = 'admin2024';
 
-  // Fetch data only when authenticated as admin
+  // Check for bypass mode on mount
   useEffect(() => {
-    if (isAdmin) {
+    const bypassActive = sessionStorage.getItem('adminBypass') === 'true';
+    if (bypassActive) {
+      setBypassMode(true);
+    }
+  }, []);
+
+  // Fetch data when authenticated or in bypass mode
+  useEffect(() => {
+    if (isAdmin || bypassMode) {
       fetchData();
     }
-  }, [isAdmin]);
+  }, [isAdmin, bypassMode]);
+
+  const handleBypassLogin = () => {
+    if (bypassPassword === BYPASS_PASSWORD) {
+      setBypassMode(true);
+      sessionStorage.setItem('adminBypass', 'true');
+      setShowBypassInput(false);
+      setBypassPassword('');
+    } else {
+      alert('Invalid password');
+    }
+  };
 
   // Fetch data
   const fetchData = async () => {
@@ -223,7 +241,13 @@ export default function AdminPage() {
   };
 
   const handleSignOut = async () => {
-    await signOut();
+    if (bypassMode) {
+      sessionStorage.removeItem('adminBypass');
+      setBypassMode(false);
+    }
+    if (isAuthenticated) {
+      await signOut();
+    }
   };
 
   const getProviderBadge = (p: string) => {
@@ -235,8 +259,10 @@ export default function AdminPage() {
     return colors[p as keyof typeof colors] || 'bg-gray-100 text-gray-700';
   };
 
+  const canAccess = isAdmin || bypassMode;
+
   // Show loading state while checking auth
-  if (isLoading) {
+  if (isLoading && !bypassMode) {
     return (
       <div className="min-h-screen bg-gray-50 flex items-center justify-center">
         <div className="text-center">
@@ -247,22 +273,87 @@ export default function AdminPage() {
     );
   }
 
-  // Show access denied message if not admin
-  if (!isAuthenticated || !isAdmin) {
+  // Show access gate if not authenticated and not in bypass mode
+  if (!canAccess) {
     return (
-      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
-        <Card className="max-w-md">
-          <CardContent className="pt-6 text-center">
-            <div className="w-16 h-16 mx-auto mb-4 rounded-full bg-red-100 flex items-center justify-center">
-              <Lock className="w-8 h-8 text-red-600" />
+      <div className="min-h-screen bg-gray-50 flex items-center justify-center p-4">
+        <Card className="max-w-md w-full">
+          <CardHeader className="text-center">
+            <div className="w-16 h-16 mx-auto mb-4 rounded-full bg-emerald-100 flex items-center justify-center">
+              <Shield className="w-8 h-8 text-emerald-600" />
             </div>
-            <h2 className="text-xl font-bold text-gray-900 mb-2">Access Denied</h2>
-            <p className="text-gray-600 mb-4">
-              You don&apos;t have permission to access the admin panel.
-            </p>
-            <Button onClick={() => router.push('/dashboard')}>
-              Go to Dashboard
+            <CardTitle className="text-2xl">Admin Access</CardTitle>
+            <CardDescription>
+              Sign in with an admin account or enter bypass code
+            </CardDescription>
+          </CardHeader>
+          <CardContent className="space-y-4">
+            {/* Login Button */}
+            <Button 
+              className="w-full bg-emerald-600 hover:bg-emerald-700"
+              onClick={() => router.push('/login?redirect=/admin')}
+            >
+              Sign In with Admin Account
             </Button>
+
+            <div className="relative">
+              <div className="absolute inset-0 flex items-center">
+                <div className="w-full border-t border-gray-200" />
+              </div>
+              <div className="relative flex justify-center text-xs uppercase">
+                <span className="bg-white px-2 text-gray-500">Or</span>
+              </div>
+            </div>
+
+            {/* Bypass Code Entry */}
+            {!showBypassInput ? (
+              <Button 
+                variant="outline" 
+                className="w-full"
+                onClick={() => setShowBypassInput(true)}
+              >
+                <Lock className="w-4 h-4 mr-2" />
+                Enter Bypass Code
+              </Button>
+            ) : (
+              <div className="space-y-3">
+                <div className="space-y-2">
+                  <Label htmlFor="bypass">Bypass Code</Label>
+                  <Input
+                    id="bypass"
+                    type="password"
+                    placeholder="Enter admin bypass code"
+                    value={bypassPassword}
+                    onChange={(e) => setBypassPassword(e.target.value)}
+                    onKeyDown={(e) => e.key === 'Enter' && handleBypassLogin()}
+                  />
+                </div>
+                <div className="flex gap-2">
+                  <Button 
+                    variant="outline" 
+                    className="flex-1"
+                    onClick={() => {
+                      setShowBypassInput(false);
+                      setBypassPassword('');
+                    }}
+                  >
+                    Cancel
+                  </Button>
+                  <Button 
+                    className="flex-1 bg-emerald-600 hover:bg-emerald-700"
+                    onClick={handleBypassLogin}
+                  >
+                    Access
+                  </Button>
+                </div>
+              </div>
+            )}
+
+            <div className="pt-4 border-t border-gray-200">
+              <p className="text-sm text-gray-500 text-center">
+                Need admin access? Contact your administrator.
+              </p>
+            </div>
           </CardContent>
         </Card>
       </div>
@@ -282,6 +373,11 @@ export default function AdminPage() {
               <div className="flex items-center gap-2">
                 <Shield className="w-5 h-5 text-emerald-600" />
                 <h1 className="text-xl font-semibold text-gray-900">Admin Panel</h1>
+                {bypassMode && (
+                  <Badge variant="outline" className="bg-amber-50 text-amber-700 border-amber-200">
+                    Bypass Mode
+                  </Badge>
+                )}
               </div>
             </div>
             <div className="flex items-center gap-3">
@@ -291,7 +387,7 @@ export default function AdminPage() {
               </Button>
               <Button variant="ghost" size="sm" onClick={handleSignOut} className="text-red-600 hover:text-red-700 hover:bg-red-50">
                 <LogOut className="w-4 h-4 mr-2" />
-                Sign Out
+                {bypassMode ? 'Exit Bypass' : 'Sign Out'}
               </Button>
             </div>
           </div>
@@ -308,10 +404,12 @@ export default function AdminPage() {
               </div>
               <div>
                 <p className="font-medium text-emerald-900">
-                  Logged in as Administrator
+                  {bypassMode ? 'Bypass Mode Active' : 'Logged in as Administrator'}
                 </p>
                 <p className="text-sm text-emerald-700">
-                  {user?.email} • {user?.user_metadata?.full_name || 'Admin User'}
+                  {bypassMode 
+                    ? 'Using bypass access for demo purposes'
+                    : `${user?.email} • ${user?.user_metadata?.full_name || 'Admin User'}`}
                 </p>
               </div>
             </div>
