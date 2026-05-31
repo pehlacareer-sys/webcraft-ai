@@ -567,3 +567,117 @@ liquid/lfm-2.5-1.2b-thinking:free
 ### 🚀 Production Deployment:
 - **URL**: https://sitezora-ai.vercel.app
 - **GitHub**: https://github.com/pehlacareer-sys/webcraft-ai
+
+---
+
+## Task ID: 7 - API Pool Queue System & Testing
+**Status:** ✅ COMPLETED
+**Date:** Current Session
+
+### Work Log:
+
+1. **Supabase Packages Installation**
+   - Installed `@supabase/supabase-js`
+   - Installed `@supabase/ssr`
+   - Added `NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY` to environment
+
+2. **API Pool Queue System Implementation**
+   - Created `APIPool` class to manage multiple providers
+   - Implemented provider locking/release mechanism
+   - Added priority-based provider selection
+   - Priority: **OpenRouter → Groq → Z.AI → Demo**
+   - When provider busy with User1, User2 gets next available
+
+3. **Queue Features**
+   - In-memory queue for concurrent requests
+   - Automatic provider release after completion
+   - Pool status monitoring via GET endpoint
+   - 30-second timeout with demo fallback
+
+4. **API Testing Results**
+
+| Provider | Status | Details |
+|----------|--------|---------|
+| OpenRouter | ✅ Working | `poolside/laguna-m.1:free` model |
+| Groq | ❌ Forbidden | API key may be invalid/expired |
+| Z.AI | ⚠️ Overloaded | Temporarily overloaded |
+| Demo | ✅ Working | Fallback mode |
+
+5. **Builder Page Testing**
+   - Tested with prompt: "Create a simple hero section"
+   - ✅ Generation successful
+   - ✅ Preview showing generated content
+   - Response time: ~15 seconds
+
+### Files Modified:
+| File | Changes |
+|------|---------|
+| `src/app/api/generate/route.ts` | Complete rewrite with queue system |
+| `package.json` | Added Supabase packages |
+| `.env.local` | Added Supabase publishable key |
+
+### API Endpoint Summary:
+```
+POST /api/generate
+- Generates code with available provider
+- Returns: { success, code, provider, poolStatus }
+
+GET /api/generate
+- Returns pool status
+- Returns: { poolStatus: { openrouter, groq, zai }, queueLength }
+```
+
+### Provider Priority Chain:
+```
+1. OpenRouter (Primary) → poolside/laguna-m.1:free
+2. Groq (Fallback) → llama-3.3-70b-versatile
+3. Z.AI (Secondary) → GLM-4.7-Flash
+4. Demo (Final Fallback) → Static templates
+```
+
+### Queue Behavior:
+- User1 requests → OpenRouter locked
+- User2 requests (while User1 processing) → Gets Groq
+- User3 requests (all busy) → Added to queue
+- Provider released → Queue processed
+
+### Stage Summary:
+- ✅ Supabase packages installed
+- ✅ API pool queue system implemented
+- ✅ OpenRouter working with Laguna M.1
+- ⚠️ Groq API returning Forbidden (needs new key)
+- ⚠️ Z.AI temporarily overloaded
+- ✅ Demo fallback working
+- ✅ Code pushed to GitHub
+- ✅ Vercel deployment active
+
+---
+
+## 🔗 Quick Links
+
+### Production URLs:
+- **Vercel Deployment**: https://sitezora-ai.vercel.app
+- **GitHub Repository**: https://github.com/pehlacareer-sys/webcraft-ai
+
+### Test These Pages:
+1. **Landing Page**: https://sitezora-ai.vercel.app/
+2. **Builder**: https://sitezora-ai.vercel.app/builder
+3. **Admin Panel**: https://sitezora-ai.vercel.app/admin
+   - Bypass code: `admin2024`
+4. **Dashboard**: https://sitezora-ai.vercel.app/dashboard
+5. **Pricing**: https://sitezora-ai.vercel.app/pricing
+6. **Templates**: https://sitezora-ai.vercel.app/templates
+
+### API Status Check:
+```bash
+curl https://sitezora-ai.vercel.app/api/generate
+```
+
+---
+
+## 📝 Notes for Next Session
+
+1. **Groq API**: Needs a new/valid API key
+2. **Z.AI**: May need to check rate limits or upgrade plan
+3. **Gemini**: Can be added to the pool when ready
+4. **Supabase**: Project is awake and ready to use
