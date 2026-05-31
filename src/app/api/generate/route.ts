@@ -1,19 +1,18 @@
 // Generate API - AI code generation endpoint
 import { NextRequest, NextResponse } from 'next/server';
 
-const SYSTEM_PROMPT = `You are an expert web developer specializing in creating modern, responsive websites. 
-Generate clean, production-ready code using HTML, CSS (Tailwind CSS classes), and vanilla JavaScript.
-Follow these rules:
-1. Use Tailwind CSS classes for styling (assume Tailwind is available via CDN)
-2. Make designs responsive (mobile-first approach)
-3. Use semantic HTML5 elements
-4. Add appropriate ARIA labels for accessibility
-5. Include smooth animations and transitions
-6. Ensure high contrast and readability
-7. Use modern design patterns (glassmorphism, gradients, shadows where appropriate)
-8. Return ONLY the complete HTML code, no explanations needed
-9. Wrap the entire code in a complete HTML document structure with DOCTYPE
-10. Include Tailwind CSS via CDN: <script src="https://cdn.tailwindcss.com"></script>`;
+const SYSTEM_PROMPT = `You are an expert web developer. Generate complete, working HTML code.
+
+CRITICAL RULES:
+1. Return ONLY valid HTML code - no explanations, no markdown
+2. Always complete ALL code - never cut off mid-generation
+3. Include: <!DOCTYPE html>, <html>, <head>, <body> tags
+4. Use Tailwind CSS via: <script src="https://cdn.tailwindcss.com"></script>
+5. Keep it simple and complete
+6. Use green/emerald colors for accents (not blue/purple)
+7. Close all HTML tags properly
+
+Format: Start with <!DOCTYPE html> and end with </html>`;
 
 // In-memory session storage for demo mode
 const sessions = new Map<string, { messages: Array<{role: string, content: string}> }>();
@@ -69,30 +68,30 @@ export async function POST(request: NextRequest) {
     }
 
     // Check for API keys in environment
-    const zaiApiKey = process.env.ZAI_API_KEY;
     const openrouterApiKey = process.env.OPENROUTER_API_KEY;
+    const zaiApiKey = process.env.ZAI_API_KEY;
     const groqApiKey = process.env.GROQ_API_KEY;
 
     let generatedCode = '';
     let usedProvider = '';
 
-    // Try Z.AI first
-    if (zaiApiKey) {
-      try {
-        generatedCode = await callZAI(zaiApiKey, fullPrompt);
-        usedProvider = 'Z.AI';
-      } catch (error) {
-        console.error('Z.AI failed:', error);
-      }
-    }
-
-    // Try OpenRouter if Z.AI failed
-    if (!generatedCode && openrouterApiKey) {
+    // Try OpenRouter FIRST (Primary - Laguna M.1 free model for coding)
+    if (openrouterApiKey) {
       try {
         generatedCode = await callOpenRouter(openrouterApiKey, fullPrompt);
         usedProvider = 'OpenRouter';
       } catch (error) {
         console.error('OpenRouter failed:', error);
+      }
+    }
+
+    // Try Z.AI if OpenRouter failed
+    if (!generatedCode && zaiApiKey) {
+      try {
+        generatedCode = await callZAI(zaiApiKey, fullPrompt);
+        usedProvider = 'Z.AI';
+      } catch (error) {
+        console.error('Z.AI failed:', error);
       }
     }
 
@@ -166,33 +165,56 @@ async function callZAI(apiKey: string, prompt: string): Promise<string> {
   return data.choices[0].message.content;
 }
 
-// OpenRouter API call
+// OpenRouter API call - Using free coding models
 async function callOpenRouter(apiKey: string, prompt: string): Promise<string> {
-  const response = await fetch('https://openrouter.ai/api/v1/chat/completions', {
-    method: 'POST',
-    headers: {
-      'Content-Type': 'application/json',
-      'Authorization': `Bearer ${apiKey}`,
-      'HTTP-Referer': process.env.NEXT_PUBLIC_APP_URL || 'https://sitezora-ai.vercel.app',
-      'X-Title': 'SiteZora AI'
-    },
-    body: JSON.stringify({
-      model: 'google/gemini-2.0-flash-001',
-      messages: [
-        { role: 'system', content: SYSTEM_PROMPT },
-        { role: 'user', content: prompt }
-      ],
-      temperature: 0.7,
-      max_tokens: 8192
-    })
-  });
+  // List of verified free models from OpenRouter
+  const freeModels = [
+    'poolside/laguna-m.1:free',              // Laguna M.1 - excellent for coding
+    'deepseek/deepseek-v4-flash:free',       // DeepSeek V4 Flash - fast and capable
+    'qwen/qwen3-next-80b-a3b-instruct:free', // Qwen 3 Next 80B - powerful
+    'google/gemma-4-31b-it:free',            // Gemma 4 31B - good for code
+  ];
 
-  if (!response.ok) {
-    throw new Error(`OpenRouter API error: ${response.status}`);
+  let lastError: Error | null = null;
+
+  for (const model of freeModels) {
+    try {
+      const response = await fetch('https://openrouter.ai/api/v1/chat/completions', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${apiKey}`,
+          'HTTP-Referer': process.env.NEXT_PUBLIC_APP_URL || 'https://sitezora-ai.vercel.app',
+          'X-Title': 'SiteZora AI'
+        },
+        body: JSON.stringify({
+          model,
+          messages: [
+            { role: 'system', content: SYSTEM_PROMPT },
+            { role: 'user', content: prompt }
+          ],
+          temperature: 0.7,
+          max_tokens: 8192
+        })
+      });
+
+      if (!response.ok) {
+        const errorData = await response.json().catch(() => ({}));
+        console.error(`OpenRouter model ${model} error:`, response.status, errorData);
+        lastError = new Error(`OpenRouter API error: ${response.status}`);
+        continue; // Try next model
+      }
+
+      const data = await response.json();
+      console.log(`OpenRouter success with model: ${model}`);
+      return data.choices[0].message.content;
+    } catch (error) {
+      console.error(`OpenRouter model ${model} failed:`, error);
+      lastError = error as Error;
+    }
   }
 
-  const data = await response.json();
-  return data.choices[0].message.content;
+  throw lastError || new Error('All OpenRouter models failed');
 }
 
 // Groq API call
@@ -224,21 +246,37 @@ async function callGroq(apiKey: string, prompt: string): Promise<string> {
 
 // Extract code from AI response
 function extractCode(response: string): string {
-  // Try to extract code blocks
-  const htmlMatch = response.match(/```html\n?([\s\S]*?)```/);
-  const codeMatch = response.match(/```\n?([\s\S]*?)```/);
+  if (!response) return '';
 
+  // Try to extract HTML code blocks first
+  const htmlMatch = response.match(/```html\s*([\s\S]*?)```/);
   if (htmlMatch) {
     return htmlMatch[1].trim();
-  } else if (codeMatch) {
-    return codeMatch[1].trim();
   }
-  
+
+  // Try to extract any code block
+  const codeMatch = response.match(/```(?:\w+)?\s*([\s\S]*?)```/);
+  if (codeMatch) {
+    const code = codeMatch[1].trim();
+    // Check if it looks like HTML
+    if (code.includes('<!DOCTYPE') || code.includes('<html') || code.includes('<body')) {
+      return code;
+    }
+  }
+
+  // Handle unclosed code blocks (model might have stopped mid-generation)
+  const unclosedMatch = response.match(/```html\s*([\s\S]*?)$/);
+  if (unclosedMatch) {
+    return unclosedMatch[1].trim();
+  }
+
   // Check if the entire response looks like HTML
   if (response.includes('<!DOCTYPE') || response.includes('<html')) {
-    return response.trim();
+    // Remove any leading/trailing markdown
+    let code = response.replace(/^```(?:html)?\s*/i, '').replace(/```\s*$/i, '');
+    return code.trim();
   }
-  
+
   return response.trim();
 }
 
