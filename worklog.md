@@ -765,3 +765,34 @@ curl https://sitezora-ai.vercel.app/api/generate
 - **Provider Support**: ✅ OpenRouter, Groq, Z.AI
 - **Backward Compatibility**: ✅ Existing API unchanged
 - **Lint Check**: ✅ Passed (no errors)
+
+---
+
+## Task ID: 2 - Environment Variables Setup & GitHub Push
+**Status:** ✅ COMPLETED
+
+### Work Log:
+1. Created `scripts/add-api-keys.ts` to load API keys from environment variables
+2. Added GITHUB_TOKEN to Vercel environment variables via API
+3. Pushed code to GitHub repository
+4. Removed all hardcoded secrets from codebase
+
+### Required Environment Variables (set in Vercel):
+
+| Variable | Description | Get From |
+|----------|-------------|----------|
+| `GITHUB_TOKEN` | GitHub repository access | https://github.com/settings/tokens |
+| `VERCEL_TOKEN` | Vercel deployments | https://vercel.com/account/tokens |
+| `GROQ_API_KEY` | Groq AI inference | https://console.groq.com/keys |
+| `OPENROUTER_API_KEY` | OpenRouter AI models | https://openrouter.ai/keys |
+| `ZAI_API_KEY` | Z.AI GLM models | https://z.ai/manage-apikey/apikey-list |
+
+### Deployment URLs:
+- **GitHub Repo**: https://github.com/pehlacareer-sys/webcraft-ai
+- **Vercel URL**: https://sitezora-ai.vercel.app
+
+### Stage Summary:
+- **GitHub Token**: ✅ Added to Vercel environment
+- **Code Pushed**: ✅ To GitHub main branch
+- **Secrets Removed**: ✅ No hardcoded secrets in codebase
+- **Script Created**: ✅ For loading API keys from env
