@@ -1,8 +1,5 @@
 // Generate API - AI code generation endpoint
 import { NextRequest, NextResponse } from 'next/server';
-import { db } from '@/lib/db';
-import { apiPool } from '@/lib/api-pool';
-import { encrypt } from '@/lib/api-pool';
 
 const SYSTEM_PROMPT = `You are an expert web developer specializing in creating modern, responsive websites. 
 Generate clean, production-ready code using HTML, CSS (Tailwind CSS classes), and vanilla JavaScript.
@@ -18,6 +15,9 @@ Follow these rules:
 9. Wrap the entire code in a complete HTML document structure with DOCTYPE
 10. Include Tailwind CSS via CDN: <script src="https://cdn.tailwindcss.com"></script>`;
 
+// In-memory session storage for demo mode
+const sessions = new Map<string, { messages: Array<{role: string, content: string}> }>();
+
 export async function POST(request: NextRequest) {
   try {
     const body = await request.json();
@@ -30,26 +30,18 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // Get or create session
-    let session;
-    if (sessionId) {
-      session = await db.session.findUnique({ where: { id: sessionId } });
-    }
-
+    // Get or create session (in-memory for demo)
+    let session = sessionId ? sessions.get(sessionId) : null;
+    const newSessionId = sessionId || `session_${Date.now()}`;
+    
     if (!session) {
-      session = await db.session.create({
-        data: {
-          userId: 'guest',
-          messages: JSON.stringify([]),
-          codeState: '',
-          status: 'active'
-        }
-      });
+      session = { messages: [] };
+      sessions.set(newSessionId, session);
     }
 
     // Build context from previous messages
     let fullPrompt = prompt;
-    const messages = JSON.parse(session.messages || '[]');
+    const messages = session.messages || [];
     
     if (messages.length > 0) {
       const recentMessages = messages.slice(-6);
@@ -76,100 +68,66 @@ export async function POST(request: NextRequest) {
       fullPrompt = `Figma Design JSON:\n${figmaData}\n\nGenerate the website code that matches this design exactly. ${prompt}`;
     }
 
-    // Get available API key
-    const apiKeys = await db.aPIKey.findMany({
-      where: { isActive: true }
-    });
+    // Check for API keys in environment
+    const zaiApiKey = process.env.ZAI_API_KEY;
+    const openrouterApiKey = process.env.OPENROUTER_API_KEY;
+    const groqApiKey = process.env.GROQ_API_KEY;
 
-    if (apiKeys.length === 0) {
-      // No API keys configured - use demo mode
-      const demoCode = generateDemoCode(prompt);
-      
-      // Save message
-      const updatedMessages = [...messages, 
-        { role: 'user', content: prompt, timestamp: Date.now() },
-        { role: 'assistant', content: demoCode, timestamp: Date.now() }
-      ];
-      
-      await db.session.update({
-        where: { id: session.id },
-        data: {
-          messages: JSON.stringify(updatedMessages),
-          codeState: demoCode,
-          lastActivity: new Date()
-        }
-      });
-
-      return NextResponse.json({
-        success: true,
-        code: demoCode,
-        sessionId: session.id,
-        demo: true,
-        message: 'Demo mode - Add API keys in admin panel for real AI generation'
-      });
-    }
-
-    // Try each API key until one works
     let generatedCode = '';
-    let lastError = null;
+    let usedProvider = '';
 
-    for (const apiKey of apiKeys) {
+    // Try Z.AI first
+    if (zaiApiKey) {
       try {
-        const decryptedKey = decrypt(apiKey.key);
-        
-        if (apiKey.provider === 'zai') {
-          generatedCode = await callZAI(decryptedKey, fullPrompt);
-        } else if (apiKey.provider === 'openrouter') {
-          generatedCode = await callOpenRouter(decryptedKey, fullPrompt);
-        } else if (apiKey.provider === 'groq') {
-          generatedCode = await callGroq(decryptedKey, fullPrompt);
-        }
-
-        // Update API key usage
-        await db.aPIKey.update({
-          where: { id: apiKey.id },
-          data: {
-            lastUsed: new Date(),
-            requestCount: { increment: 1 },
-            dailyUsed: { increment: 1 }
-          }
-        });
-
-        break;
+        generatedCode = await callZAI(zaiApiKey, fullPrompt);
+        usedProvider = 'Z.AI';
       } catch (error) {
-        console.error(`API ${apiKey.provider} failed:`, error);
-        lastError = error;
-        continue;
+        console.error('Z.AI failed:', error);
       }
     }
 
+    // Try OpenRouter if Z.AI failed
+    if (!generatedCode && openrouterApiKey) {
+      try {
+        generatedCode = await callOpenRouter(openrouterApiKey, fullPrompt);
+        usedProvider = 'OpenRouter';
+      } catch (error) {
+        console.error('OpenRouter failed:', error);
+      }
+    }
+
+    // Try Groq if others failed
+    if (!generatedCode && groqApiKey) {
+      try {
+        generatedCode = await callGroq(groqApiKey, fullPrompt);
+        usedProvider = 'Groq';
+      } catch (error) {
+        console.error('Groq failed:', error);
+      }
+    }
+
+    // Use demo mode if all APIs failed or no keys configured
     if (!generatedCode) {
-      // All APIs failed - use demo mode
       generatedCode = generateDemoCode(prompt);
+      usedProvider = 'Demo';
     }
 
     // Extract code from response
     const code = extractCode(generatedCode);
 
-    // Save messages
-    const updatedMessages = [...messages,
-      { role: 'user', content: prompt, timestamp: Date.now() },
-      { role: 'assistant', content: generatedCode, timestamp: Date.now() }
+    // Update session
+    session.messages = [
+      ...messages,
+      { role: 'user', content: prompt },
+      { role: 'assistant', content: generatedCode }
     ];
-
-    await db.session.update({
-      where: { id: session.id },
-      data: {
-        messages: JSON.stringify(updatedMessages),
-        codeState: code,
-        lastActivity: new Date()
-      }
-    });
 
     return NextResponse.json({
       success: true,
       code,
-      sessionId: session.id
+      sessionId: newSessionId,
+      provider: usedProvider,
+      demo: usedProvider === 'Demo'
     });
 
   } catch (error) {
@@ -179,11 +137,6 @@ export async function POST(request: NextRequest) {
       { status: 500 }
     );
   }
-}
-
-// Decrypt helper
-function decrypt(encrypted: string): string {
-  return Buffer.from(encrypted, 'base64').toString('utf-8');
 }
 
 // Z.AI API call
@@ -220,11 +173,11 @@ async function callOpenRouter(apiKey: string, prompt: string): Promise<string> {
     headers: {
       'Content-Type': 'application/json',
       'Authorization': `Bearer ${apiKey}`,
-      'HTTP-Referer': process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000',
-      'X-Title': 'WebCraft AI'
+      'HTTP-Referer': process.env.NEXT_PUBLIC_APP_URL || 'https://sitezora-ai.vercel.app',
+      'X-Title': 'SiteZora AI'
     },
     body: JSON.stringify({
-      model: 'z-ai/glm-4.5-air:free',
+      model: 'google/gemini-2.0-flash-001',
       messages: [
         { role: 'system', content: SYSTEM_PROMPT },
         { role: 'user', content: prompt }
@@ -294,12 +247,15 @@ function generateDemoCode(prompt: string): string {
   const lowerPrompt = prompt.toLowerCase();
   
   // Detect type from prompt
+  const isHero = lowerPrompt.includes('hero') || lowerPrompt.includes('headline');
   const isLanding = lowerPrompt.includes('landing') || lowerPrompt.includes('saas');
   const isPortfolio = lowerPrompt.includes('portfolio') || lowerPrompt.includes('personal');
   const isPricing = lowerPrompt.includes('pricing');
   const isBlog = lowerPrompt.includes('blog');
   
-  if (isLanding) {
+  if (isHero) {
+    return generateHeroSection(prompt);
+  } else if (isLanding) {
     return generateLandingPage(prompt);
   } else if (isPortfolio) {
     return generatePortfolioPage(prompt);
@@ -310,6 +266,71 @@ function generateDemoCode(prompt: string): string {
   }
   
   return generateDefaultPage(prompt);
+}
+
+function generateHeroSection(prompt: string): string {
+  return `<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Hero Section</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body class="bg-white">
+  <section class="min-h-screen flex items-center justify-center px-4 bg-gradient-to-br from-emerald-50 via-white to-teal-50">
+    <div class="max-w-4xl mx-auto text-center">
+      <div class="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-emerald-100 text-emerald-700 text-sm font-medium mb-6">
+        <span class="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span>
+        Now Available
+      </div>
+      
+      <h1 class="text-5xl md:text-6xl lg:text-7xl font-bold text-gray-900 mb-6 leading-tight">
+        Build Amazing Products
+        <span class="block bg-gradient-to-r from-emerald-600 to-teal-600 bg-clip-text text-transparent">
+          10x Faster
+        </span>
+      </h1>
+      
+      <p class="text-xl text-gray-600 mb-8 max-w-2xl mx-auto">
+        The modern platform for building beautiful, responsive websites with ease. 
+        No coding required.
+      </p>
+      
+      <div class="flex flex-col sm:flex-row items-center justify-center gap-4">
+        <button class="px-8 py-4 bg-gradient-to-r from-emerald-600 to-teal-600 text-white rounded-xl font-medium hover:shadow-lg hover:shadow-emerald-500/25 transition-all">
+          Get Started Free
+          <span class="ml-2">→</span>
+        </button>
+        <button class="px-8 py-4 bg-white border border-gray-200 text-gray-700 rounded-xl font-medium hover:bg-gray-50 transition-all">
+          Watch Demo
+        </button>
+      </div>
+      
+      <div class="mt-12 flex items-center justify-center gap-8 text-sm text-gray-500">
+        <div class="flex items-center gap-2">
+          <svg class="w-5 h-5 text-emerald-500" fill="currentColor" viewBox="0 0 20 20">
+            <path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd"/>
+          </svg>
+          Free to start
+        </div>
+        <div class="flex items-center gap-2">
+          <svg class="w-5 h-5 text-emerald-500" fill="currentColor" viewBox="0 0 20 20">
+            <path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd"/>
+          </svg>
+          No credit card
+        </div>
+        <div class="flex items-center gap-2">
+          <svg class="w-5 h-5 text-emerald-500" fill="currentColor" viewBox="0 0 20 20">
+            <path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd"/>
+          </svg>
+          Cancel anytime
+        </div>
+      </div>
+    </div>
+  </section>
+</body>
+</html>`;
 }
 
 function generateLandingPage(prompt: string): string {
@@ -416,7 +437,6 @@ function generatePortfolioPage(prompt: string): string {
   <script src="https://cdn.tailwindcss.com"></script>
 </head>
 <body class="bg-white">
-  <!-- Hero -->
   <section class="min-h-screen flex items-center px-4">
     <div class="max-w-4xl mx-auto">
       <h1 class="text-5xl font-bold text-gray-900 mb-4">John Doe</h1>
@@ -424,29 +444,6 @@ function generatePortfolioPage(prompt: string): string {
       <div class="flex gap-4">
         <button class="px-6 py-3 bg-gray-900 text-white rounded-lg">View Work</button>
         <button class="px-6 py-3 border border-gray-300 rounded-lg">Contact</button>
-      </div>
-    </div>
-  </section>
-
-  <!-- Projects -->
-  <section class="py-20 bg-gray-50 px-4">
-    <div class="max-w-7xl mx-auto">
-      <h2 class="text-3xl font-bold text-gray-900 mb-12">Projects</h2>
-      <div class="grid md:grid-cols-2 gap-8">
-        <div class="bg-white rounded-xl overflow-hidden shadow-sm">
-          <div class="h-48 bg-gradient-to-br from-emerald-500 to-teal-500"></div>
-          <div class="p-6">
-            <h3 class="text-lg font-semibold text-gray-900">Project One</h3>
-            <p class="text-gray-600">A modern web application</p>
-          </div>
-        </div>
-        <div class="bg-white rounded-xl overflow-hidden shadow-sm">
-          <div class="h-48 bg-gradient-to-br from-emerald-500 to-teal-500"></div>
-          <div class="p-6">
-            <h3 class="text-lg font-semibold text-gray-900">Project Two</h3>
-            <p class="text-gray-600">Mobile-first design system</p>
-          </div>
-        </div>
       </div>
     </div>
   </section>
@@ -470,28 +467,22 @@ function generatePricingPage(prompt: string): string {
       <p class="text-center text-gray-600 mb-12">Choose the plan that works for you</p>
       
       <div class="grid md:grid-cols-3 gap-8">
-        <!-- Free -->
         <div class="border border-gray-200 rounded-xl p-8">
           <h3 class="text-lg font-semibold text-gray-900">Free</h3>
           <p class="text-4xl font-bold text-gray-900 my-4">$0</p>
-          <p class="text-gray-600 mb-6">Perfect for getting started</p>
           <button class="w-full py-2 border border-gray-300 rounded-lg">Get Started</button>
         </div>
         
-        <!-- Pro -->
         <div class="border-2 border-emerald-500 rounded-xl p-8 relative">
           <span class="absolute -top-3 left-1/2 -translate-x-1/2 bg-emerald-500 text-white text-sm px-3 py-1 rounded-full">Popular</span>
           <h3 class="text-lg font-semibold text-gray-900">Pro</h3>
           <p class="text-4xl font-bold text-gray-900 my-4">$29</p>
-          <p class="text-gray-600 mb-6">Best for professionals</p>
           <button class="w-full py-2 bg-emerald-500 text-white rounded-lg">Get Started</button>
         </div>
         
-        <!-- Enterprise -->
         <div class="border border-gray-200 rounded-xl p-8">
           <h3 class="text-lg font-semibold text-gray-900">Enterprise</h3>
           <p class="text-4xl font-bold text-gray-900 my-4">$99</p>
-          <p class="text-gray-600 mb-6">For large organizations</p>
           <button class="w-full py-2 border border-gray-300 rounded-lg">Contact Sales</button>
         </div>
       </div>
@@ -514,19 +505,10 @@ function generateBlogPage(prompt: string): string {
   <section class="py-20 px-4">
     <div class="max-w-4xl mx-auto">
       <h2 class="text-4xl font-bold text-gray-900 mb-12">Latest Articles</h2>
-      
       <div class="space-y-8">
         <article class="border-b border-gray-100 pb-8">
           <span class="text-emerald-600 text-sm font-medium">Technology</span>
           <h3 class="text-2xl font-bold text-gray-900 mt-2 mb-3">Getting Started with Modern Web Development</h3>
-          <p class="text-gray-600 mb-4">Learn the fundamentals of building modern websites with the latest tools and technologies...</p>
-          <a href="#" class="text-emerald-600 font-medium">Read more →</a>
-        </article>
-        
-        <article class="border-b border-gray-100 pb-8">
-          <span class="text-emerald-600 text-sm font-medium">Design</span>
-          <h3 class="text-2xl font-bold text-gray-900 mt-2 mb-3">Design Principles for Better User Experience</h3>
-          <p class="text-gray-600 mb-4">Understanding the core principles that make websites more usable and engaging...</p>
           <a href="#" class="text-emerald-600 font-medium">Read more →</a>
         </article>
       </div>
